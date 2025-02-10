@@ -1,1 +1,1 @@
-web: gunicorn Gluturk.wsgi --log-file -
+web: gunicorn Gloturk.wsgi --log-file -
