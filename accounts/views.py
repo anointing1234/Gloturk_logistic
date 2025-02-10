@@ -424,3 +424,70 @@ def contact_send(request):
     # Return error response for invalid request method
     logger.error("Invalid request method.")
     return JsonResponse({'success': False, 'message': 'Invalid request method. Please use POST.'})
+
+
+
+
+def contact_us_send(request):
+    logger.info(f"Request method: {request.method}")
+
+    if request.method == 'POST':
+        # Get data sent from the form (JSON format)
+        data = json.loads(request.body)
+        name = data.get('name')
+        email = data.get('email')
+        subject = data.get('subject')
+        message = data.get('message')
+      
+        logger.info(f"Received contact message from {name} ({email}) with message: {message}")
+
+        # Check if required fields are provided
+        if not name or not email or not message:
+            logger.warning("Missing required fields in the contact form.")
+            return JsonResponse({
+                'success': False,
+                'error_message': 'All fields are required.',
+            })
+
+        # Prepare the email content with HTML formatting
+        email_subject = f"New Contact Message: {subject}"
+        email_message = format_html(
+            """
+            <html>
+                <body>
+                    <h2>New Contact Message</h2>
+                    <p><strong>Name:</strong> {name}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Service Type:</strong> {subject}</p>
+                    <p><strong>Message:</strong></p>
+                    <p>{message}</p>
+                </body>
+            </html>
+            """,
+            name=name,  # Corrected variable name
+            email=email,
+            subject=subject,
+            message=message
+        )
+        recipient_email = 'info@gloturklogistics.com'  # Replace with your recipient email
+
+        try:
+            # Send email using Django's send_mail function
+            send_mail(
+                email_subject,       # Email subject
+                '',                  # Email message (text version, if needed)
+                settings.DEFAULT_FROM_EMAIL,  # Sender email
+                [recipient_email],      # Receiver email
+                fail_silently=False,
+                html_message=email_message  # Send HTML message
+            )
+            logger.info(f"Contact message sent successfully to {recipient_email}.")
+            return JsonResponse({'success': True, 'message': 'Your message has been sent successfully!'})
+
+        except Exception as e:
+            logger.error(f"Failed to send contact message: {e}")
+            return JsonResponse({'success': False, 'message': 'There was an error sending your message. Please try again later.'})
+
+    # Return error response for invalid request method
+    logger.error("Invalid request method.")
+    return JsonResponse({'success': False, 'message': 'Invalid request method. Please use POST.'})

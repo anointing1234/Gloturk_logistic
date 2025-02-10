@@ -4,6 +4,39 @@
 {% block contents %}
 
 
+<style>
+    
+
+    /* Spinning animation for button */
+    @keyframes spin {
+       0% { transform: rotate(0deg); }
+       100% { transform: rotate(360deg); }
+     }
+     
+     .spinning {
+       position: relative;
+       pointer-events: none;  /* Prevent interaction during submission */
+     }
+     
+     .spinning::after {
+       content: '';
+       position: absolute;
+       top: 40%;
+       left: 43%;
+       width: 20px;
+       height: 20px;
+       border: 3px solid #fff;
+       border-top: 3px solid transparent;
+       border-radius: 50%;
+       animation: spin 1s linear infinite;
+       transform: translate(-50%, -50%);
+     }
+     
+     .spinning span {
+       visibility: hidden;  /* Hide the text during the spinning animation */
+     }
+     
+   </style>
 
 
 <!-- Contact Start -->
@@ -23,34 +56,34 @@
                     </p>
                 </div>
                 <div class="bg-light p-4 rounded shadow">
-                    <form>
+                    <form id="contact_form">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="name" placeholder="Your Name" required>
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Your Name" required>
                                     <label for="name">Your Name</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="email" class="form-control" id="email" placeholder="Your Email" required>
+                                    <input type="email" class="form-control" id="email" name="email" placeholder="Your Email" required>
                                     <label for="email">Your Email</label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <input type="text" class="form-control" id="subject" placeholder="Subject" required>
+                                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Subject" required>
                                     <label for="subject">Subject</label>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="form-floating">
-                                    <textarea class="form-control" placeholder="Leave a message here" id="message" style="height: 150px" required></textarea>
+                                    <textarea class="form-control" placeholder="Leave a message here" id="message" name="message" style="height: 150px" required></textarea>
                                     <label for="message">Message</label>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <button class="btn btn-primary w-100 py-3" type="submit">Send Message</button>
+                                <button class="btn btn-primary w-100 py-3" type="submit" id="submit_btn">Send Message</button>
                             </div>
                         </div>
                     </form>
@@ -70,5 +103,80 @@
 <!-- Contact End -->
 
     <!-- Contact End -->
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Include CounterUp.js -->
+
+    
+<script>
+    document.getElementById("contact_form").addEventListener("submit", function(e) {
+      e.preventDefault(); // Prevent default form submission
+      
+      // Get the submit button element
+      const submitButton = document.getElementById("submit_btn");
+      
+      // Add the spinning class to the button
+      submitButton.classList.add("spinning");
+      submitButton.disabled = true; // Disable the button to prevent double clicks
+  
+      // Capture form data
+      const formData = {
+        name: document.getElementsByName("name")[0].value,
+        email: document.getElementsByName("email")[0].value,
+        subject: document.getElementsByName("subject")[0].value, // Assuming this is the message
+        message: document.getElementsByName("message")[0].value,
+      };
+  
+      fetch("{% url 'contact_us_send' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify(formData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Message Sent!',
+            text: data.message,
+            width: '400px',  // Custom SweetAlert size
+            padding: '10px',
+            heightAuto: false
+          });
+          document.getElementById("contact_form").reset();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: data.message,
+            width: '400px',
+            padding: '10px',
+            heightAuto: false
+          });
+        }
+        // After submission, reset the button
+        submitButton.classList.remove("spinning");
+        submitButton.disabled = false;
+      })
+      .catch(error => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Something went wrong!',
+          text: 'Please try again later.',
+          width: '400px',
+          padding: '10px',
+          heightAuto: false
+        });
+        // Reset the button in case of error
+        submitButton.classList.remove("spinning");
+        submitButton.disabled = false;
+      });
+    });
+  </script>
+
 
     {% endblock  %}
