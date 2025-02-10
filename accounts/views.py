@@ -406,7 +406,7 @@ def contact_send(request):
             service_type=service_type,
             subject=subject
         )
-        recipient_email = 'yakubudestiny9@gmail.com'  # Replace with your recipient email
+        recipient_email = 'info@gloturklogistics.com'  # Replace with your recipient email
 
         try:
             # Send email using Django's send_mail function
