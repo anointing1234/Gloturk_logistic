@@ -242,8 +242,6 @@ def insert_courier(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
-
-@login_required
 def track_package(request):
     tracking_status = None
     tracking_error = None
@@ -252,13 +250,11 @@ def track_package(request):
         tracking_number = request.POST.get('tracking_number', '').strip()  # Remove whitespace
         if tracking_number:
             try:
+                # Find the courier by tracking number without checking user
                 courier = Courier.objects.get(tracking_number=tracking_number)
                 
-                # Ensure that the logged-in user matches the associated user
-                if courier.user == request.user:
-                    tracking_status = courier  # Pass the courier object to the template
-                else:
-                    tracking_error = "You are not authorized to view this package."
+                # Pass the courier object to the template
+                tracking_status = courier  
             except Courier.DoesNotExist:
                 tracking_error = "No package found with the provided tracking number."
         else:
