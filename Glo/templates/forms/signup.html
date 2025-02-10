@@ -1,0 +1,154 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% block contents %}
+
+<style>
+    .form-control.form-control-lg {
+        font-size: 14px;
+        padding-right: 40px; /* Add padding to avoid overlap with the eye icon */
+    }
+
+   
+
+
+
+</style>
+
+<section class="h-100 d-flex justify-content-center align-items-center">
+    <div class="container py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-8 col-lg-6">
+                <div class="card bg-transparent border-0 card-registration my-4">
+                    <div class="card-body border-0 bg-transparent p-md-5 text-black">
+                        <h4 class="mb-5 text-uppercase text-center">Sign Up</h4>
+                        <form id="signup" method="POST"  onsubmit="return showBankDetails(event);">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.first_name.label_tag }}
+                                        {{ form.first_name }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.last_name.label_tag }}
+                                        {{ form.last_name }}
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.email.label_tag }}
+                                        {{ form.email }}
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mb-4 position-relative">
+                                    {{ form.phone_number.label_tag }}
+                                    {{ form.phone_number }}
+                             </div>
+                                <div class="col-md-12 mb-4 position-relative">
+                                    {{ form.password.label_tag }}
+                                    {{ form.password }}
+                               </div>
+                                <div class="col-md-12 mb-4 position-relative">
+                                    {{ form.confirm_password.label_tag }}
+                                    {{ form.confirm_password }}
+                             </div>
+
+                             <span><a class="mt-4" style="font-size:15px; text-decoration: none; color: black;" href="{% url 'login_view' %}">Already have an account? Login</a></span>
+                      
+                           
+                           
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100">Register</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+ <!-- SweetAlert2 CSS -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+ <!-- SweetAlert2 JavaScript -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+ <script>
+  function showBankDetails(event) {
+    event.preventDefault(); // Prevent default form submission behavior
+
+    // Display a loading spinner with SweetAlert2
+    Swal.fire({
+      title: 'Processing...',
+      text: 'Please wait while we process your registration.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Collect form data
+    const form = document.getElementById('signup');
+    const formData = new FormData(form);
+
+    // Send data to the server
+    fetch("{% url 'register' %}", {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': '{{ csrf_token }}'
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        Swal.close(); // Close the loading spinner
+        if (data.success) {
+          // Show success message
+          Swal.fire({
+            icon: 'success',
+            title: 'Registration Successful!',
+            text: data.message || 'You have successfully registered!',
+            confirmButtonText: 'Okay'
+          }).then(() => {
+            window.location.href = data.redirect_url; // Redirect to the next page
+          });
+        } else {
+          // Show error message
+          Swal.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: data.message || 'Please check your details and try again.',
+            confirmButtonText: 'Okay'
+          });
+        }
+      })
+      .catch((error) => {
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'An Error Occurred',
+          text: 'Something went wrong. Please try again later.',
+          confirmButtonText: 'Okay'
+        });
+        console.error('Error:', error);
+      });
+  }
+
+
+</script>
+
+
+
+
+
+{% endblock %}

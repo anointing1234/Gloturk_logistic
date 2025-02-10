@@ -1,0 +1,119 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block contents %}
+
+<div class="container-fluid py-5 bg-light">
+    <div class="container">
+        <h1 class="text-center mb-4">Track Glotürk Logistics Kargo</h1>
+        <p class="text-center">Track your shipment in real time and get updates on its status as it moves through the Glotürk Logistics Kargo network.</p>
+
+        <!-- Tracking Form -->
+        <div class="bg-white p-4 rounded shadow mb-4">
+            <h5 class="text-primary mb-3 fw-bold">Track Your Shipment</h5>
+            <p class="text-muted">Enter your tracking number to get the latest status of your shipment.</p>
+            <form method="POST" action="{% url 'track_package' %}" id="trackingForm">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input style="font-size:15px;" type="text" name="tracking_number" class="form-control form-control-lg" placeholder="Enter Tracking Number" required>
+                    <button class="btn btn-primary d-flex align-items-center" type="submit" id="trackButton">
+                        <span id="trackButtonText"><i class="fas fa-search"></i> Track</span>
+                        <div id="loadingSpinner" class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Tracking Result -->
+        {% if tracking_status %}
+        <div class="tracking-result bg-white p-4 rounded shadow">
+            <h4 class="text-secondary mb-4">Result Summary</h4>
+            <div class="mb-3"><strong>Tracking Number:</strong> {{ tracking_status.tracking_number }}</div>
+            <div class="row mb-4">
+                <div class="col-12 col-md-6">
+                    <h5 class="text-primary">Receiver's Details</h5>
+                    <p><strong>Name:</strong> {{ tracking_status.receiver_name }}</p>
+                    <p><strong>Contact Number:</strong> {{ tracking_status.receiver_contact_number }}</p>
+                    <p><strong>Email:</strong> {{ tracking_status.receiver_email }}</p>
+                    <p><strong>Address:</strong> {{ tracking_status.receiver_address }}</p>
+                </div>
+                <div class="col-12 col-md-6">
+                    <h5 class="text-primary">Sender's Details</h5>
+                    <p><strong>Name:</strong> {{ tracking_status.sender_name }}</p>
+                    <p><strong>Contact Number:</strong> {{ tracking_status.sender_contact_number }}</p>
+                    <p><strong>Email:</strong> {{ tracking_status.sender_email }}</p>
+                    <p><strong>Address:</strong> {{ tracking_status.sender_address }}</p>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h5 class="text-primary">Item(s) Description</h5>
+                <p><strong>Item Description:</strong> {{ tracking_status.item_description }}</p>
+                <p><strong>Number of Items:</strong> {{ tracking_status.number_of_items }}</p>
+                <p><strong>Parcel Colour:</strong> {{ tracking_status.parcel_colour }}</p>
+            </div>
+            <div class="mb-4">
+                <h5 class="text-primary">Parcel & Consignment Transit</h5>
+                <p><strong>Destination:</strong> {{ tracking_status.destination }}</p>
+                <p><strong>Date Sent:</strong> {{ tracking_status.date_sent }}</p>
+                <p><strong>Estimated Delivery Date:</strong> {{ tracking_status.estimated_delivery_date }}</p>
+            </div>
+            <div class="mb-4">
+                <h5 class="text-primary">Parcel & Consignment Movement Information and Status</h5>
+                <p><strong>Status:</strong> {{ tracking_status.status }}</p>
+            </div>
+        </div>
+        {% elif tracking_error %}
+        <div class="alert alert-danger mt-4">
+            {{ tracking_error }}
+        </div>
+        {% endif %}
+
+        <!-- Footer Section -->
+        <div class="text-center mt-5">
+            <a href="{% url 'track_package' %}" class="btn btn-secondary mb-2">Try New Search</a>
+            <a href="/" class="btn btn-outline-secondary mb-2">Back to Homepage</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('trackingForm').addEventListener('submit', function(e) {
+        e.preventDefault();  // Prevent form submission
+
+        // Change the button state to loading
+        let trackButton = document.getElementById('trackButton');
+        let trackButtonText = document.getElementById('trackButtonText');
+        let loadingSpinner = document.getElementById('loadingSpinner');
+
+        trackButton.disabled = true;  // Disable the button to prevent multiple submissions
+        trackButtonText.classList.add('d-none');  // Hide the "Track" text
+        loadingSpinner.classList.remove('d-none');  // Show the loading spinner
+
+        // Submit the form after a short delay (optional)
+        setTimeout(() => {
+            this.submit();
+        }, 500);  // Adjust the delay if needed
+    });
+</script>
+
+<style>
+    #loadingSpinner {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    /* Custom styles for responsiveness */
+    @media (max-width: 576px) {
+        h1 {
+            font-size: 1.5rem; /* Adjust heading size for small screens */
+        }
+        .tracking-result h5 {
+            font-size: 1.2rem; /* Adjust subheading size */
+        }
+        .tracking-result p {
+            font-size: 0.9rem; /* Adjust paragraph size */
+        }
+    }
+</style>
+{% endblock %}

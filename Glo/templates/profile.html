@@ -1,0 +1,55 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% block contents %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <div class="card shadow">
+        <div class="card-header text-center bg-primary text-white">
+          <h2>My Profile</h2>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Profile Picture Section -->
+            <div class="col-12 col-md-4 text-center mb-4 mb-md-0">
+              <!-- Use a default profile image or user-uploaded picture -->
+              <img src="{% static 'img/default_logo_user.jpg' %}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+            </div>
+            <!-- User Details Section -->
+            <div class="col-12 col-md-8">
+              <div class="table-responsive">
+                <table class="table table-borderless">
+                  <tbody>
+                    <tr>
+                      <th scope="row" style="width: 40%;">Name</th>
+                      <td>{{ user.first_name }} {{ user.last_name }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Username</th>
+                      <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Email</th>
+                      <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Phone Number</th>
+                      <td>{{ user.phone_number }}</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Member Since</th>
+                      <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div> <!-- row -->
+        </div> <!-- card-body -->
+        <!-- Optionally, add a card-footer with an Edit Profile button -->
+     
+      </div> <!-- card -->
+    </div>
+  </div>
+</div>
+{% endblock %}

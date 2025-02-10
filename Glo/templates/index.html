@@ -1,0 +1,615 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% load humanize %}
+{% block contents %}
+
+<style>
+    
+
+ /* Spinning animation for button */
+ @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .spinning {
+    position: relative;
+    pointer-events: none;  /* Prevent interaction during submission */
+  }
+  
+  .spinning::after {
+    content: '';
+    position: absolute;
+    top: 40%;
+    left: 43%;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #fff;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+  }
+  
+  .spinning span {
+    visibility: hidden;  /* Hide the text during the spinning animation */
+  }
+  
+</style>
+
+
+
+<!-- Carousel Start -->
+<div class="container-fluid p-0 pb-5">
+    <div class="owl-carousel header-carousel position-relative mb-5">
+        <!-- Slide 1 -->
+        <div class="owl-carousel-item position-relative">
+            <img class="img-fluid" src="{% static 'img/carousel-1.jpg' %}" alt="Reliable Logistics">
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(6, 3, 21, .5);">
+                <div class="container">
+                    <div class="row justify-content-start">
+                        <div class="col-10 col-lg-8">
+                            <h5 class="text-white text-uppercase mb-3 animated slideInDown">Reliable & Fast Delivery</h5>
+                            <h1 class="display-3 text-white animated slideInDown mb-4">Your Trusted Partner for <span class="text-primary">Global Logistics</span></h1>
+                            <p class="fs-5 fw-medium text-white mb-4 pb-2">At Glotürk Logistic Kargo Service, we ensure secure, on-time deliveries worldwide. Experience seamless logistics tailored for your business.</p>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'logout_view' %}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft mb-3">Logout</a>
+                        {% else %}
+                            <a href="{% url 'login_view' %}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft mb-3">Get Started</a>
+                        {% endif %}
+                        
+                            <a href="" class="btn btn-secondary py-md-3 px-md-5 animated slideInRight mb-3">Explore Services</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="owl-carousel-item position-relative">
+            <img class="img-fluid" src="{% static 'img/carousel-2.jpg' %}" alt="Fast Transport">
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(6, 3, 21, .5);">
+                <div class="container">
+                    <div class="row justify-content-start">
+                        <div class="col-10 col-lg-8">
+                            <h5 class="text-white text-uppercase mb-3 animated slideInDown">End-to-End Logistics Solutions</h5>
+                            <h1 class="display-3 text-white animated slideInDown mb-4">Delivering <span class="text-primary">Excellence</span> Across the Globe</h1>
+                            <p class="fs-5 fw-medium text-white mb-4 pb-2">Glotürk Logistic Kargo Service connects you with the world through innovative logistics solutions designed for speed, reliability, and efficiency.</p>
+                            <a href="" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft  mb-3">Learn More</a>
+                            <a href="{% url 'login_view' %}" class="btn btn-secondary py-md-3 px-md-5 animated slideInRight mb-3">Contact us</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>  
+<!-- Carousel End -->
+
+
+<section class="tracking-section py-5 bg-light">
+    <div class="container text-center">
+        <h4 class="mb-4 fw-bold">Track Your Package</h4>
+        <p class="text-muted mb-4">Enter your tracking number below to get the latest status of your shipment.</p>
+        <form method="POST" action="{% url 'track_package' %}" class="row justify-content-center" id="trackingForm">
+            {% csrf_token %}
+            <div class="col-md-6 col-sm-10 mb-3">
+                <div class="input-group">
+                    <input style="font-size:15px;" type="text" name="tracking_number" class="form-control form-control-lg" placeholder="Enter Tracking Number" required>
+                    <button class="btn btn-primary d-flex align-items-center" type="submit" id="trackButton">
+                        <span id="trackButtonText"><i class="fas fa-search"></i> Track</span>
+                        <div id="loadingSpinner" class="spinner-border spinner-border-sm text-light ms-2 d-none" role="status"></div>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+    <!-- About Start -->
+<div id="about" class="container-fluid overflow-hidden py-5 px-lg-0">
+    <div  class="container about py-5 px-lg-0">
+        <div class="row g-5 mx-lg-0">
+            <div class="col-lg-6 ps-lg-0 wow fadeInLeft" data-wow-delay="0.1s" style="min-height: 400px;">
+                <div class="position-relative h-100">
+                    <img class="position-absolute img-fluid w-100 h-100" src="{% static 'img/about.jpg' %}" style="object-fit: cover;" alt="About Gloturk Logistics">
+                </div>
+            </div>
+            <div class="col-lg-6 about-text wow fadeInUp" data-wow-delay="0.3s">
+                <h6 class="text-secondary text-uppercase mb-3">About Us</h6>
+                <h1 class="mb-4">Welcome to Gloturk Logistics Kargo Service</h1>
+                <p class="mb-4">
+                    At Gloturk Logistics, we pride ourselves on being a trusted global partner in transportation and logistics. With years of experience in the industry, we offer reliable and innovative cargo services that connect businesses and individuals to destinations worldwide. Our mission is to simplify logistics while delivering excellence and ensuring customer satisfaction every step of the way.
+                </p>
+                <p class="mb-5">
+                    Whether you’re shipping small parcels or managing large-scale consignments, Gloturk Logistics is your solution for fast, secure, and cost-effective delivery services. From international cargo shipping to domestic delivery solutions, we cover it all with precision and dedication.
+                </p>
+                <div class="row g-4 mb-5">
+                    <div class="col-sm-6 wow fadeIn" data-wow-delay="0.5s">
+                        <i class="fa fa-globe fa-3x text-primary mb-3"></i>
+                        <h5>Global Reach</h5>
+                        <p class="m-0">With an extensive network, we offer comprehensive logistics solutions to deliver your parcels to any part of the world.</p>
+                    </div>
+                    <div class="col-sm-6 wow fadeIn" data-wow-delay="0.7s">
+                        <i class="fa fa-shipping-fast fa-3x text-primary mb-3"></i>
+                        <h5>Timely Delivery</h5>
+                        <p class="m-0">We understand the importance of time-sensitive shipments. Our streamlined process ensures on-time delivery, every time.</p>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</div>
+<!-- About End -->
+
+<!-- Fact Start -->
+<div class="container-xxl py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="text-secondary text-uppercase mb-3">Some Facts</h6>
+                <h1 class="mb-5">#1 Choice for Reliable and Efficient Logistics Solutions</h1>
+                <p class="mb-5">
+                    At Gloturk Logistics Kargo Service, we are committed to providing top-notch logistics solutions for our clients worldwide. With a focus on reliability, speed, and customer satisfaction, we have successfully handled thousands of shipments, ensuring they reach their destination safely and on time. Join our growing family of happy clients and experience the best in logistics services.
+                </p>
+                <div class="d-flex align-items-center">
+                    <i class="fa fa-headphones fa-2x flex-shrink-0 bg-primary p-3 text-white"></i>
+                    <div class="ps-4">
+                        <h6>Call for any query!</h6>
+                        <h3 class="text-primary m-0">+012 345 6789</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-4 align-items-center">
+                    <div class="col-sm-6">
+                        <div class="bg-primary p-4 mb-4 wow fadeIn" data-wow-delay="0.3s">
+                            <i class="fa fa-users fa-2x text-white mb-3"></i>
+                            <h2 class="text-white mb-2">2,500+</h2>
+                            <p class="text-white mb-0">Happy Clients</p>
+                        </div>
+                        <div class="bg-secondary p-4 wow fadeIn" data-wow-delay="0.5s">
+                            <i class="fa fa-ship fa-2x text-white mb-3"></i>
+                            <h2 class="text-white mb-2 ">4,800+</h2>
+                            <p class="text-white mb-0">Shipments Delivered</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="bg-success p-4 wow fadeIn" data-wow-delay="0.7s">
+                            <i class="fa fa-star fa-2x text-white mb-3"></i>
+                            <h2 class="text-white mb-2 ">1,200+</h2>
+                            <p class="text-white mb-0">Positive Reviews</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Fact End -->
+
+
+<!-- Service Start -->
+<div id="services" class="container-xxl py-5">
+    <div  class="container py-5">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="text-secondary text-uppercase">Our Services</h6>
+            <h1 class="mb-5">Comprehensive Logistics Solutions</h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="service-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/service-1.jpg' %}" alt="Air Freight">
+                    </div>
+                    <h4 class="mb-3">Air Freight</h4>
+                    <p>Fast and reliable air freight services to deliver your shipments on time, anywhere in the world.</p>
+                    <a class="btn-slide mt-2" href=""><i class="fa fa-arrow-right"></i><span>Read More</span></a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.5s">
+                <div class="service-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/service-2.jpg' %}" alt="Ocean Freight">
+                    </div>
+                    <h4 class="mb-3">Ocean Freight</h4>
+                    <p>Cost-effective ocean freight services for bulk and large shipments across international waters.</p>
+                    <a class="btn-slide mt-2" href=""><i class="fa fa-arrow-right"></i><span>Read More</span></a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.7s">
+                <div class="service-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/service-3.jpg' %}" alt="Road Freight">
+                    </div>
+                    <h4 class="mb-3">Road Freight</h4>
+                    <p>Reliable road transportation solutions to ensure seamless delivery within and across regions.</p>
+                    <a class="btn-slide mt-2" href=""><i class="fa fa-arrow-right"></i><span>Read More</span></a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="service-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/service-4.jpg' %}" alt="Train Freight">
+                    </div>
+                    <h4 class="mb-3">Train Freight</h4>
+                    <p>Eco-friendly and efficient rail freight services for long-distance cargo movement.</p>
+                    <a class="btn-slide mt-2" href=""><i class="fa fa-arrow-right"></i><span>Read More</span></a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.5s">
+                <div class="service-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/service-5.jpg' %}" alt="Customs Clearance">
+                    </div>
+                    <h4 class="mb-3">Customs Clearance</h4>
+                    <p>Simplified customs clearance services to ensure your shipments pass through borders smoothly.</p>
+                    <a class="btn-slide mt-2" href=""><i class="fa fa-arrow-right"></i><span>Read More</span></a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 wow fadeInUp" data-wow-delay="0.7s">
+                <div class="service-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/service-6.jpg' %}" alt="Warehouse Solutions">
+                    </div>
+                    <h4 class="mb-3">Warehouse Solutions</h4>
+                    <p>Secure and well-equipped warehouses to store your goods until they’re ready for dispatch.</p>
+                    <a class="btn-slide mt-2" href=""><i class="fa fa-arrow-right"></i><span>Read More</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Service End -->
+<!-- Feature Start -->
+<div id="feature"  class="container-fluid overflow-hidden py-5 px-lg-0">
+    <div class="container feature py-5 px-lg-0">
+        <div class="row g-5 mx-lg-0">
+            <div class="col-lg-6 feature-text wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="text-secondary text-uppercase mb-3">Our Features</h6>
+                <h1 class="mb-5">Your Trusted Logistics Partner Since 1990</h1>
+                <div class="d-flex mb-5 wow fadeInUp" data-wow-delay="0.3s">
+                    <i class="fa fa-globe text-primary fa-3x flex-shrink-0"></i>
+                    <div class="ms-4">
+                        <h5>Worldwide Service</h5>
+                        <p class="mb-0">With a global network and experienced partners, we offer seamless logistics solutions to any destination around the world.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-5 wow fadeIn" data-wow-delay="0.5s">
+                    <i class="fa fa-shipping-fast text-primary fa-3x flex-shrink-0"></i>
+                    <div class="ms-4">
+                        <h5>On-Time Delivery</h5>
+                        <p class="mb-0">Our efficient processes and dedicated team ensure that your cargo is delivered promptly and without delay.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-0 wow fadeInUp" data-wow-delay="0.7s">
+                    <i class="fa fa-headphones text-primary fa-3x flex-shrink-0"></i>
+                    <div class="ms-4">
+                        <h5>24/7 Customer Support</h5>
+                        <p class="mb-0">Our support team is available round the clock to assist with your queries and provide real-time updates on your shipments.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 pe-lg-0 wow fadeInRight" data-wow-delay="0.1s" style="min-height: 400px;">
+                <div class="position-relative h-100">
+                    <img class="position-absolute img-fluid w-100 h-100" src="{% static 'img/feature.jpg' %}" style="object-fit: cover;" alt="Gloturk Logistics Feature">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Feature End -->
+
+
+<!-- Quote Start -->
+<div class="container-xxl py-5">
+    <div id="Quote" class="container py-5">
+        <div  class="row g-5 align-items-center">
+            <div class="col-lg-5 wow fadeInUp" data-wow-delay="0.1s">
+                <h6 class="text-secondary text-uppercase mb-3">Get a Quick Estimate</h6>
+                <h1 class="mb-5">Fast & Reliable Courier Service</h1>
+                <p class="mb-5">Need a quote for your next delivery? Our team is ready to provide a fast, competitive estimate. Trust us for secure, on-time delivery—anywhere, anytime.</p>
+                <div class="d-flex align-items-center">
+                    <i class="fa fa-phone-alt fa-2x flex-shrink-0 bg-primary p-3 text-white"></i>
+                    <div class="ps-4">
+                        <h6>24/7 Customer Support</h6>
+                        <h3 class="text-primary m-0">+123 456 7890</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="bg-light text-center p-5 wow fadeIn" data-wow-delay="0.5s">
+                    <h3 class="mb-4">Request Your Free Quote</h3>
+                    <form id="contact_form">
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6">
+                                <input type="text" name="fullname" class="form-control border-0" placeholder="Full Name" required style="height: 55px;">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <input type="email" name="email" class="form-control border-0" placeholder="Email Address" required style="height: 55px;">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <input type="number" name="phone_number" class="form-control border-0" placeholder="Phone Number" required style="height: 55px;">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <select name="service_type" class="form-select border-0" style="height: 55px;" required>
+                                    <option selected>Select Service Type</option>
+                                    <option value="Domestic_Courier">Domestic Courier</option>
+                                    <option value="International_Shipping">International Shipping</option>
+                                    <option value="Same_Day_Delivery">Same-Day Delivery</option>
+                                    <option value="Freight_Forwarding">Freight Forwarding</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <textarea name="subject" class="form-control border-0" placeholder="message" rows="4" required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary w-100 py-3" id="submit_btn"  type="submit">Get a Quote</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Quote End -->
+
+<!-- Team Start -->
+<div class="container-xxl py-5">
+    <div class="container py-5">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="text-secondary text-uppercase">Our Team</h6>
+            <h1 class="mb-5">Expert Team Members</h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="team-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/team-1.jpg' %}" alt="">
+                    </div>
+                    <h5 class="mb-0">Michael Johnson</h5>
+                    <p>Operations Manager</p>
+                    <div class="btn-slide mt-1">
+                        <i class="fa fa-share"></i>
+                        <span>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
+                <div class="team-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/team-2.jpg' %}" alt="">
+                    </div>
+                    <h5 class="mb-0">David Thompson</h5>
+                    <p>Logistics Coordinator</p>
+                    <div class="btn-slide mt-1">
+                        <i class="fa fa-share"></i>
+                        <span>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.7s">
+                <div class="team-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/team-3.jpg' %}" alt="">
+                    </div>
+                    <h5 class="mb-0">James Anderson</h5>
+                    <p>Warehouse Supervisor</p>
+                    <div class="btn-slide mt-1">
+                        <i class="fa fa-share"></i>
+                        <span>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.9s">
+                <div class="team-item p-4">
+                    <div class="overflow-hidden mb-4">
+                        <img class="img-fluid" src="{% static 'img/team-4.jpg' %}" alt="">
+                    </div>
+                    <h5 class="mb-0">Robert Evans</h5>
+                    <p>Customer Support Head</p>
+                    <div class="btn-slide mt-1">
+                        <i class="fa fa-share"></i>
+                        <span>
+                            <a href=""><i class="fab fa-facebook-f"></i></a>
+                            <a href=""><i class="fab fa-twitter"></i></a>
+                            <a href=""><i class="fab fa-instagram"></i></a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Team End -->
+
+<!-- Testimonial Start -->
+<div class="container-xxl py-5 wow fadeInUp" data-wow-delay="0.1s">
+    <div class="container py-5">
+        <div class="text-center">
+            <h6 class="text-secondary text-uppercase">Testimonial</h6>
+            <h1 class="mb-0">What Our Clients Say</h1>
+        </div>
+        <div class="owl-carousel testimonial-carousel wow fadeInUp" data-wow-delay="0.1s">
+            <div class="testimonial-item p-4 my-5">
+                <i class="fa fa-quote-right fa-3x text-light position-absolute top-0 end-0 mt-n3 me-4"></i>
+                <div class="d-flex align-items-end mb-4">
+                    <img class="img-fluid flex-shrink-0" src="{% static 'img/testimonial-1.jpg' %}" style="width: 80px; height: 80px;">
+                    <div class="ms-4">
+                        <h5 class="mb-1">Jane Smith</h5>
+                        <p class="m-0">Business Owner</p>
+                    </div>
+                </div>
+                <p class="mb-0">"Glotürk Logistic Service has been exceptional. Their on-time delivery and professional support helped my business grow exponentially."</p>
+            </div>
+            <div class="testimonial-item p-4 my-5">
+                <i class="fa fa-quote-right fa-3x text-light position-absolute top-0 end-0 mt-n3 me-4"></i>
+                <div class="d-flex align-items-end mb-4">
+                    <img class="img-fluid flex-shrink-0" src="{% static 'img/testimonial-2.jpg' %}" style="width: 80px; height: 80px;">
+                    <div class="ms-4">
+                        <h5 class="mb-1">Michael Brown</h5>
+                        <p class="m-0">E-commerce Manager</p>
+                    </div>
+                </div>
+                <p class="mb-0">"I’ve worked with several courier services, but Glotürk stands out with their efficiency and reliable customer service. Highly recommended!"</p>
+            </div>
+            <div class="testimonial-item p-4 my-5">
+                <i class="fa fa-quote-right fa-3x text-light position-absolute top-0 end-0 mt-n3 me-4"></i>
+                <div class="d-flex align-items-end mb-4">
+                    <img class="img-fluid flex-shrink-0" src="{% static 'img/testimonial-3.jpg' %}" style="width: 80px; height: 80px;">
+                    <div class="ms-4">
+                        <h5 class="mb-1">David Wilson</h5>
+                        <p class="m-0">Freight Forwarder</p>
+                    </div>
+                </div>
+                <p class="mb-0">"Their global reach and attention to detail make them my go-to logistics partner. My shipments always arrive on time and intact."</p>
+            </div>
+            <div class="testimonial-item p-4 my-5">
+                <i class="fa fa-quote-right fa-3x text-light position-absolute top-0 end-0 mt-n3 me-4"></i>
+                <div class="d-flex align-items-end mb-4">
+                    <img class="img-fluid flex-shrink-0" src="{% static 'img/testimonial-4.jpg' %}" style="width: 80px; height: 80px;">
+                    <div class="ms-4">
+                        <h5 class="mb-1">Angelia Stan</h5>
+                        <p class="m-0">Retail Business Owner</p>
+                    </div>
+                </div>
+                <p class="mb-0">"Excellent service and fast delivery! Glotürk is the perfect logistics partner for any business looking to expand internationally."</p>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Testimonial End -->
+
+
+
+      
+  <!-- Add this to your base template for Bootstrap icons (if not already included) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <!-- Include jQuery (if not already included) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include CounterUp.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.counterup/1.0.0/jquery.counterup.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.counter-up').counterUp({
+            delay: 10, // The delay in milliseconds between each count
+            time: 1000 // The total time in milliseconds for the counting animation
+        });
+    });
+</script>
+
+  <script>
+    document.getElementById('trackingForm').addEventListener('submit', function(e) {
+        e.preventDefault();  // Prevent form submission
+
+        // Change the button state to loading
+        let trackButton = document.getElementById('trackButton');
+        let trackButtonText = document.getElementById('trackButtonText');
+        let loadingSpinner = document.getElementById('loadingSpinner');
+
+        trackButton.disabled = true;  // Disable the button to prevent multiple submissions
+        trackButtonText.classList.add('d-none');  // Hide the "Track" text
+        loadingSpinner.classList.remove('d-none');  // Show the loading spinner
+
+        // Submit the form after a short delay
+        setTimeout(() => {
+            this.submit();
+        }, 500);  // Adjust the delay if needed
+    });
+</script>
+
+<style>
+    #loadingSpinner {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+</style>
+
+
+
+<script>
+    document.getElementById("contact_form").addEventListener("submit", function(e) {
+      e.preventDefault(); // Prevent default form submission
+      
+      // Get the submit button element
+      const submitButton = document.getElementById("submit_btn");
+      
+      // Add the spinning class to the button
+      submitButton.classList.add("spinning");
+      submitButton.disabled = true; // Disable the button to prevent double clicks
+  
+      // Capture form data
+      const formData = {
+        fullname: document.getElementsByName("fullname")[0].value,
+        email: document.getElementsByName("email")[0].value,
+        phone_number: document.getElementsByName("phone_number")[0].value,
+        service_type: document.getElementsByName("service_type")[0].value,
+        subject: document.getElementsByName("subject")[0].value, // Assuming this is the message
+      };
+  
+      fetch("{% url 'contact_send' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify(formData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Message Sent!',
+            text: data.message,
+            width: '400px',  // Custom SweetAlert size
+            padding: '10px',
+            heightAuto: false
+          });
+          document.getElementById("contact_form").reset();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: data.message,
+            width: '400px',
+            padding: '10px',
+            heightAuto: false
+          });
+        }
+        // After submission, reset the button
+        submitButton.classList.remove("spinning");
+        submitButton.disabled = false;
+      })
+      .catch(error => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Something went wrong!',
+          text: 'Please try again later.',
+          width: '400px',
+          padding: '10px',
+          heightAuto: false
+        });
+        // Reset the button in case of error
+        submitButton.classList.remove("spinning");
+        submitButton.disabled = false;
+      });
+    });
+  </script>
+
+    {% endblock  %}

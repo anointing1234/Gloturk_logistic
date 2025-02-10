@@ -1,0 +1,1 @@
+web: gunicorn Gluturk.wsgi --log-file -

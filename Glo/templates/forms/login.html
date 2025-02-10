@@ -1,0 +1,128 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% load humanize %}
+{% block contents %}
+
+<style>
+    .card-registration .select-input.form-control[readonly]:not([disabled]) {
+        font-size: 30px;
+        line-height: 2.15;
+        padding-left: .75em;
+        padding-right: .75em;
+    }
+    .card-registration .select-arrow {
+        top: 13px;
+    }
+    /* Placeholder styling for smaller font */
+    ::placeholder {
+        font-size: 12px; /* Adjust to your desired size */
+        color: #999; /* Optional: Change placeholder color */
+    }
+    /* Input text styling for consistency */
+    .form-control.form-control-lg {
+        font-size: 14px;
+    }
+</style>
+
+
+
+<section class="h-100 d-flex justify-content-center align-items-center">
+    <div class="container py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-8 col-lg-6">
+                <div class="card bg-transparent border-0 card-registration my-4">
+                    <div class="card-body border-0 bg-transparent p-md-5 text-black">
+                        <h4 class="mb-5 text-uppercase text-center">Login</h4>
+                        <form id="LoginForm" method="POST"  onsubmit="return handleLogin(event);">
+                            {% csrf_token %}
+                            <div class="row">
+
+                             
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.email.label_tag }}
+                                        {{ form.email }}
+                                    </div>
+                                </div>
+                            
+                                <div class="col-md-12 mb-4 position-relative">
+                                    {{ form.password.label_tag }}
+                                    {{ form.password }}
+                               </div>
+                                
+                               <span><a  style="font-size:15px; text-decoration: none; color: black;" class="mb-3" href="{% url 'forgot_pass' %}">Forgot password</a></span>
+                      
+                               <span><a class="mb-3" style="font-size:15px; text-decoration: none; color: black;" href="{% url 'signup_view' %}">Dont have an account? signup</a></span>
+                      
+                           
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100">Login</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+ <!-- SweetAlert2 CSS -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+ <!-- SweetAlert2 JavaScript -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+
+<script>
+    function handleLogin(event) {
+      event.preventDefault()
+    
+      // Show loading spinner
+      Swal.fire({
+        title: 'Logging in...',
+        text: 'Please wait while we verify your details.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading()
+        }
+      })
+    
+      const formData = new FormData(document.getElementById('LoginForm'))
+    
+      fetch("{% url 'login_Account' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': '{{ csrf_token }}'
+        }
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          Swal.close() // Close the loading message
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Welcome!',
+              text: data.message || 'You have successfully logged in!',
+              confirmButtonText: 'Okay'
+            }).then(() => {
+              window.location.href = data.redirect_url
+            })
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Login failed',
+              text: data.message || 'Invalid phone number or password. Please try again.',
+              confirmButtonText: 'Okay'
+            })
+          }
+        })
+    }
+  </script>
+  
+
+
+  {% endblock  %}

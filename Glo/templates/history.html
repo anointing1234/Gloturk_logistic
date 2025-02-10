@@ -1,0 +1,64 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block contents %}
+<div class="container-fluid py-5 bg-light">
+    <div class="container">
+        <h1 class="text-center mb-5">Transaction History</h1>
+        <p class="text-center">View a detailed history of your transactions with Glotürk Logistics.</p>
+
+        {% if transactions %}
+        <!-- Transactions Table -->
+        <div class="bg-white p-4 rounded shadow">
+            <h5 class="text-primary mb-3 fw-bold">Your Transactions</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Transaction ID</th>
+                            <th>Amount (USD)</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Courier Tracking Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ transaction.transaction_id }}</td>
+                            <td>{{ transaction.amount|floatformat:2 }}</td>
+                            <td>
+                                {% if transaction.status == 'Completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif transaction.status == 'Pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif transaction.status == 'Failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                    <span class="badge bg-info">Refunded</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ transaction.date|date:"M d, Y H:i" }}</td>
+                            <td>{{ transaction.courier.tracking_number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center mt-4">
+            No transactions found.
+        </div>
+        {% endif %}
+
+        <!-- Footer Section -->
+        <div class="text-center mt-5">
+            <a href="/" class="btn btn-outline-secondary">Back to Homepage</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

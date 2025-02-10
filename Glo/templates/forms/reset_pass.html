@@ -1,0 +1,146 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% load humanize %}
+{% block contents %}
+
+<style>
+    .card-registration .select-input.form-control[readonly]:not([disabled]) {
+        font-size: 30px;
+        line-height: 2.15;
+        padding-left: .75em;
+        padding-right: .75em;
+    }
+    .card-registration .select-arrow {
+        top: 13px;
+    }
+    /* Placeholder styling for smaller font */
+    ::placeholder {
+        font-size: 12px; /* Adjust to your desired size */
+        color: #999; /* Optional: Change placeholder color */
+    }
+    /* Input text styling for consistency */
+    .form-control.form-control-lg {
+        font-size: 14px;
+    }
+</style>
+
+
+
+<section class="h-100 d-flex justify-content-center align-items-center">
+    <div class="container py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-8 col-lg-6">
+                <div class="card bg-transparent border-0 card-registration my-4">
+                    <div class="card-body border-0 bg-transparent p-md-5 text-black">
+                        <h4 class="mb-5 text-uppercase text-center">Password Reset</h4>
+                        <form id="resetPasswordForm"  method="POST"  onsubmit="return  handleResetPassword(event);">
+                            {% csrf_token %}
+                            <div class="row">
+
+                             
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.email.label_tag }}
+                                        {{ form.email }}
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.reset_code.label_tag }}
+                                        {{ form.reset_code }}
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.new_password.label_tag }}
+                                        {{ form.new_password }}
+                                    </div>
+                                </div>
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.confirm_password.label_tag }}
+                                        {{ form.confirm_password }}
+                                    </div>
+                                </div>
+                            
+                                
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100">Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+ <!-- SweetAlert2 CSS -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+ <!-- SweetAlert2 JavaScript -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+
+ <script>
+    function handleResetPassword(event) {
+        event.preventDefault();
+
+        // Show loading spinner
+        Swal.fire({
+            title: 'Resetting password...',
+            text: 'Please wait while we process your request',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const formData = new FormData(document.getElementById('resetPasswordForm'));
+
+        fetch("{% url 'reset_password' %}", {  // Adjust the URL to your reset password view
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            Swal.close(); // Close the loading message
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Password Reset Successful!',
+                    text: data.message || 'Your password has been reset successfully.',
+                    confirmButtonText: 'Okay'
+                }).then(() => {
+                    window.location.href = "{% url 'login_Account' %}";  // Redirect to the login page
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Reset Failed',
+                    text: data.message || 'There was an error resetting your password.',
+                    confirmButtonText: 'Okay'
+                });
+            }
+        })
+        .catch((error) => {
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while resetting the password. Please try again later.',
+                confirmButtonText: 'Okay'
+            });
+        });
+    }
+</script>
+
+
+
+  {% endblock  %}

@@ -1,0 +1,130 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% load humanize %}
+{% block contents %}
+
+<style>
+    .card-registration .select-input.form-control[readonly]:not([disabled]) {
+        font-size: 30px;
+        line-height: 2.15;
+        padding-left: .75em;
+        padding-right: .75em;
+    }
+    .card-registration .select-arrow {
+        top: 13px;
+    }
+    /* Placeholder styling for smaller font */
+    ::placeholder {
+        font-size: 12px; /* Adjust to your desired size */
+        color: #999; /* Optional: Change placeholder color */
+    }
+    /* Input text styling for consistency */
+    .form-control.form-control-lg {
+        font-size: 14px;
+    }
+</style>
+
+
+
+<section class="h-100 d-flex justify-content-center align-items-center">
+    <div class="container py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-8 col-lg-6">
+                <div class="card bg-transparent border-0 card-registration my-4">
+                    <div class="card-body border-0 bg-transparent p-md-5 text-black">
+                        <h4 class="mb-5 text-uppercase text-center">Send Password reset Code</h4>
+                        <form id="sendmailform"  method="POST"  onsubmit="return  handleSendMail(event);">
+                            {% csrf_token %}
+                            <div class="row">
+
+                             
+                                <div class="col-md-12 mb-4">
+                                    <div class="form-outline">
+                                        {{ form.email.label_tag }}
+                                        {{ form.email }}
+                                    </div>
+                                </div>
+                            
+                                
+                            
+                           
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100">send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+ <!-- SweetAlert2 CSS -->
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+ <!-- SweetAlert2 JavaScript -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+ <script>
+    function handleSendMail(event) {
+        event.preventDefault();
+
+        // Show loading spinner
+        Swal.fire({
+            title: 'Sending mail...',
+            text: 'Please wait while we verify the email',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const formData = new FormData(document.getElementById('sendmailform'));
+
+        fetch("{% url 'sendmail_view' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            Swal.close(); // Close the loading message
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Email Sent!',
+                    text: data.message || 'A password reset code has been sent to your email.',
+                    confirmButtonText: 'Okay'
+                }).then(() => {
+                    // Redirect to the reset password page
+                    window.location.href = "{% url 'reset_password' %}"; // Replace with your actual reset password URL
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Email Not Sent',
+                    text: data.message || 'This email address is not registered.',
+                    confirmButtonText: 'Okay'
+                });
+            }
+        })
+        .catch((error) => {
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while sending the email. Please try again later.',
+                confirmButtonText: 'Okay'
+            });
+        });
+    }
+</script>
+
+
+
+  {% endblock  %}

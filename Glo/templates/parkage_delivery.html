@@ -1,0 +1,218 @@
+{% extends 'base/core.html' %}
+{% load static %}
+{% block contents %}
+
+<style>
+    .card-registration .form-outline {
+        margin-bottom: 15px;
+    }
+    .form-control {
+        font-size: 14px;
+    }
+</style>
+<section class="h-100 d-flex justify-content-center align-items-center">
+    <div class="container py-5">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-10 col-lg-8">
+                <div class="card bg-transparent border-0 card-registration my-4">
+                    <div class="card-body border-0 bg-transparent p-md-5 text-black">
+                        <h4 class="mb-5 text-uppercase text-center">Fill Form for Delivery</h4>
+                        <form id="CourierForm" method="POST">
+                            {% csrf_token %}
+                            <div class="row">
+                                <!-- Receiver's Details -->
+                                <h5 class="mb-3">Receiver's Details</h5>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.receiver_name.label_tag }}
+                                    {{ form.receiver_name }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.receiver_contact_number.label_tag }}
+                                    {{ form.receiver_contact_number }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.receiver_email.label_tag }}
+                                    {{ form.receiver_email }}
+                                </div>
+                                <div class="col-md-12 form-outline">
+                                    {{ form.receiver_address.label_tag }}
+                                    {{ form.receiver_address }}
+                                </div>
+                                
+                                <!-- Sender's Details -->
+                                <h5 class="mt-4 mb-3">Sender's Details</h5>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.sender_name.label_tag }}
+                                    {{ form.sender_name }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.sender_contact_number.label_tag }}
+                                    {{ form.sender_contact_number }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.sender_email.label_tag }}
+                                    {{ form.sender_email }}
+                                </div>
+                                <div class="col-md-12 form-outline">
+                                    {{ form.sender_address.label_tag }}
+                                    {{ form.sender_address }}
+                                </div>
+                                
+                                <!-- Item Description -->
+                                <h5 class="mt-4 mb-3">Item Description</h5>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.item_description.label_tag }}
+                                    {{ form.item_description }}
+                                </div>
+                                <div class="col-md-3 form-outline">
+                                    {{ form.number_of_items.label_tag }}
+                                    {{ form.number_of_items }}
+                                </div>
+                                <div class="col-md-3 form-outline">
+                                    {{ form.parcel_colour.label_tag }}
+                                    {{ form.parcel_colour }}
+                                </div>
+                                
+                                <!-- Package Details: Weight and Category -->
+                                <h5 class="mt-4 mb-3">Package Details</h5>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.weight.label_tag }}
+                                    {{ form.weight }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.category.label_tag }}
+                                    {{ form.category }}
+                                </div>
+                                
+                                <!-- Delivery Details -->
+                                <h5 class="mt-4 mb-3">Delivery Details</h5>
+                                <div class="col-md-12 form-outline">
+                                    {{ form.destination.label_tag }}
+                                    {{ form.destination }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.date_sent.label_tag }}
+                                    {{ form.date_sent }}
+                                </div>
+                                <div class="col-md-6 form-outline">
+                                    {{ form.estimated_delivery_date.label_tag }}
+                                    {{ form.estimated_delivery_date }}
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-dark btn-lg w-100">Submit</button>
+                            </div>
+                        </form>
+                    </div><!-- End card-body -->
+                </div><!-- End card -->
+            </div><!-- End col -->
+        </div><!-- End row -->
+    </div><!-- End container -->
+</section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#CourierForm').on('submit', function(e) {
+            e.preventDefault();  // Prevent full-page reload
+
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we calculate the delivery price.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();  // Show loading animation
+                }
+            });
+
+            // First AJAX request to get delivery price and bank details
+            $.ajax({
+                url: '{% url "courier_form" %}',  // URL for calculating delivery price
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    Swal.close();  // Close the loading alert
+
+                    if (response.delivery_price && response.bank_details) {
+                        Swal.fire({
+                            title: 'Delivery Details',
+                            html: `
+                                <p><strong>Delivery Price:</strong> $${response.delivery_price.toFixed(2)}</p>
+                                <h5 class="mt-3">Bank Details for Payment</h5>
+                                <p><strong>Bank Name:</strong> ${response.bank_details.bank_name}</p>
+                                <p><strong>Account Name:</strong> ${response.bank_details.account_name}</p>
+                                <p><strong>Account Number:</strong> ${response.bank_details.account_number}</p>
+                                ${response.bank_details.swift_code ? `<p><strong>SWIFT Code:</strong> ${response.bank_details.swift_code}</p>` : ''}
+                                ${response.bank_details.branch_address ? `<p><strong>Branch Address:</strong> ${response.bank_details.branch_address}</p>` : ''}
+                            `,
+                            icon: 'info',
+                            confirmButtonText: 'Proceed'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Add delivery price to form data
+                                let formData = $('#CourierForm').serialize() + '&delivery_price=' + encodeURIComponent(response.delivery_price);
+                                // Show loading alert for the second AJAX request
+                                Swal.fire({
+                                    title: 'Processing...',
+                                    text: 'Please wait while we submit your request.',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();  // Show loading animation
+                                    }
+                                });
+                                
+                                // Second AJAX request to insert the courier with delivery price
+                                $.ajax({
+                                    url: '{% url "insert_courier" %}',  // URL for inserting form data
+                                    type: 'POST',
+                                    data: formData,
+                                    success: function() {
+                                        Swal.fire({
+                                            title: 'Success',
+                                            text: 'Your request has been received. Payment is under review. You will be notified once it is confirmed.',
+                                            icon: 'success',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            // Optional: Redirect or clear the form after submission
+                                            $('#CourierForm')[0].reset();
+                                            window.location.href = "{% url 'transactions' %}";
+                                        });
+                                    },
+                                    error: function() {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: 'Failed to submit your request. Please try again.',
+                                            icon: 'error',
+                                            confirmButtonText: 'OK'
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Could not retrieve delivery details. Please try again.',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.close();  // Close the loading alert
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Something went wrong. Please check your internet connection or try again later.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}
