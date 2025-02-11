@@ -41,7 +41,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from django.http import FileResponse
 import io
-
+from reportlab.graphics.barcode import code128 
 
 logger = logging.getLogger(__name__)
 
@@ -162,23 +162,24 @@ def calculate_delivery_price(weight, category):
     return fee_rule.calculate_fee(weight)
 
 
-
-def generate_receipt(courier,user):
+def generate_receipt(courier, user):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     p.setTitle("Air Waybill Receipt")
 
-    styles = getSampleStyleSheet()
-    
     # Header
     p.setFont("Helvetica-Bold", 16)
-    p.drawString(220, 800, "AIR WAYBILL RECEIPT")
-    
+    p.drawCentredString(300, 800, "AIR WAYBILL RECEIPT")
+
     p.setFont("Helvetica", 10)
     p.drawString(50, 780, "Glotürk Logistics Kargo")
-    p.drawString(50, 765, "www.gloturklogistics.com")
+    p.drawString(50, 765, "Website: www.gloturklogistics.com")
     p.drawString(400, 780, f"Tracking #: {courier.tracking_number}")
     p.drawString(400, 765, f"Bill Date: {courier.date_sent.strftime('%d-%b-%Y')}")
+
+    # Generate Barcode for Tracking Number
+    barcode = code128.Code128(courier.tracking_number, barHeight=20, barWidth=0.8)
+    barcode.drawOn(p, 400, 740)  # Adjust the position of the barcode (x=400, y=740)
 
     # Table for Ship From and Ship To
     data = [
@@ -199,15 +200,16 @@ def generate_receipt(courier,user):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
     ]))
-    table.wrapOn(p, 50, 600)
-    table.drawOn(p, 50, 700)
+    table.wrapOn(p, 50, 620)
+    table.drawOn(p, 50, 670)
 
     # Package and Delivery Details
     package_data = [
         ['PACKAGE DETAILS', ''],
         ['Weight', f'{courier.weight} kg'],
         ['Category', courier.category],
-        ['Delivery Status', courier.status]
+        ['Delivery Status', courier.status],
+        ['Item discription',courier.item_description]
     ]
 
     package_table = Table(package_data, colWidths=[150, 350])
@@ -231,6 +233,8 @@ def generate_receipt(courier,user):
     p.save()
     buffer.seek(0)
     return buffer
+
+
 
 def insert_courier(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
