@@ -16,6 +16,7 @@ from django.contrib.auth import logout
 from django.contrib.auth import get_user_model
 from bs4 import BeautifulSoup
 import random
+from decimal import Decimal
 from .models import AdminBankDetails,Courier,Transaction,PasswordResetCode,DeliveryFee
 from accounts.forms import RegisterForm,LoginForm,CourierForm,SendresetcodeForm,PasswordResetForm
 from django.contrib.auth import logout as auth_logout,login as auth_login,authenticate
@@ -106,8 +107,8 @@ def courier_form(request):
             # Calculate delivery price using weight and category from the form
             weight = form.cleaned_data['weight']
             category = form.cleaned_data['category']
-            delivery_price = calculate_fee(weight, category)
-            delivery_price = delivery_price
+            delivery_price = calculate_delivery_price(Decimal(weight), category)
+            delivery_price = float(delivery_price) 
             # Retrieve bank details
             bank_details = AdminBankDetails.objects.first()  # Example: Get the first entry in BankDetails table
             if bank_details:
@@ -149,7 +150,7 @@ def calculate_delivery_price(weight, category):
         )
     except DeliveryFee.DoesNotExist:
         return 0.00  # Or set a default fee
-    return fee_rule.calculate_delivery_price(weight)
+    return fee_rule.calculate_fee(weight)
 
 
 def insert_courier(request):
