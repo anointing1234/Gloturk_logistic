@@ -33,6 +33,15 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from django.core.mail import EmailMessage
 from django.utils.html import format_html
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from reportlab.platypus import Table, TableStyle, Paragraph
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from django.http import FileResponse
+import io
+
 
 logger = logging.getLogger(__name__)
 
@@ -153,39 +162,107 @@ def calculate_delivery_price(weight, category):
     return fee_rule.calculate_fee(weight)
 
 
+
+def generate_receipt(courier,user):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    p.setTitle("Air Waybill Receipt")
+
+    styles = getSampleStyleSheet()
+    
+    # Header
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(220, 800, "AIR WAYBILL RECEIPT")
+    
+    p.setFont("Helvetica", 10)
+    p.drawString(50, 780, "Glotürk Logistics Kargo")
+    p.drawString(50, 765, "www.gloturklogistics.com")
+    p.drawString(400, 780, f"Tracking #: {courier.tracking_number}")
+    p.drawString(400, 765, f"Bill Date: {courier.date_sent.strftime('%d-%b-%Y')}")
+
+    # Table for Ship From and Ship To
+    data = [
+        ['SHIP FROM', 'SHIP TO'],
+        [
+            f'Consignor: {courier.sender_name}\nAddress: {courier.sender_address}\nEmail: {courier.sender_email}', 
+            f'Consignee: {courier.receiver_name}\nAddress: {courier.receiver_address}\nEmail: {courier.receiver_email}\nPhone: {courier.receiver_contact_number}'
+        ]
+    ]
+
+    table = Table(data, colWidths=[250, 250])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    ]))
+    table.wrapOn(p, 50, 600)
+    table.drawOn(p, 50, 700)
+
+    # Package and Delivery Details
+    package_data = [
+        ['PACKAGE DETAILS', ''],
+        ['Weight', f'{courier.weight} kg'],
+        ['Category', courier.category],
+        ['Delivery Status', courier.status]
+    ]
+
+    package_table = Table(package_data, colWidths=[150, 350])
+    package_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    ]))
+    package_table.wrapOn(p, 50, 500)
+    package_table.drawOn(p, 50, 550)
+
+    # Footer Section with Disclaimer and Signatures
+    p.setFont("Helvetica-Oblique", 8)
+    p.drawString(50, 100, "If you have any questions, contact us at info@gloturklogistics.com.")
+    p.drawString(50, 85, "Note: This document serves as a receipt for your shipment.")
+    
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return buffer
+
 def insert_courier(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         form = CourierForm(request.POST)
-        delivery_price = request.POST.get('delivery_price')  # Get the delivery price from the request
+        delivery_price = request.POST.get('delivery_price')
 
         if form.is_valid() and delivery_price:
             try:
-                delivery_price = float(delivery_price)  # Ensure delivery price is a float
+                delivery_price = float(delivery_price)
             except ValueError:
                 return JsonResponse({'error': 'Invalid delivery price'}, status=400)
 
-            # Save the courier instance
             courier = form.save(commit=False)
-            courier.user = request.user  # Associate the logged-in user with the courier
-            courier.tracking_number = str(uuid.uuid4()).replace('-', '').upper()[:10]  # Generate a unique tracking number
+            courier.user = request.user
+            courier.tracking_number = str(uuid.uuid4()).replace('-', '').upper()[:10]
             courier.status = 'Pending'
-            courier.weight = form.cleaned_data.get('weight')
-            courier.category = form.cleaned_data.get('category')
             courier.save()
 
-            # Create a corresponding transaction record with the correct delivery amount
             Transaction.objects.create(
-                user=request.user,  # Associate with the logged-in user
+                user=request.user,
                 courier=courier,
-                transaction_id=str(uuid.uuid4()).replace('-', '').upper()[:12],  # Generate a unique transaction ID
-                amount=delivery_price,  # Use the delivery price from the request
+                transaction_id=str(uuid.uuid4()).replace('-', '').upper()[:12],
+                amount=delivery_price,
                 status='Pending',
                 date=now()
             )
 
-                    # Prepare the HTML content for the email
+            # Generate the PDF receipt
+            pdf_buffer = generate_receipt(courier, request.user)
+
+            # Prepare and send the email with the attached PDF
             subject = "Payment Processing - Glotürk Logistics Kargo"
-            formatted_delivery_price = "{:.2f}".format(delivery_price)  # Format the price as a string
             html_message = format_html(
                 """
                 <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
@@ -193,11 +270,7 @@ def insert_courier(request):
                     <p style="font-size: 16px; color: #333;">Dear <strong>{}</strong>,</p>
                     <p style="font-size: 16px; color: #333;">
                         Thank you for choosing Glotürk Logistics for your delivery service.<br>
-                        We have received your payment of <strong>${}</strong>.
-                    </p>
-                    <p style="font-size: 16px; color: #333;">
-                        Your payment is currently being processed.<br>
-                        We will notify you once it has been confirmed and provide further updates on your delivery.
+                        We have received your payment and your delivery details are being processed.
                     </p>
                     <h2 style="color: #28a745;">Delivery Details</h2>
                     <table style="margin: 0 auto; border-collapse: collapse; font-size: 14px;">
@@ -209,10 +282,6 @@ def insert_courier(request):
                             <td style="padding: 8px; border: 1px solid #ddd;"><strong>Delivery Status:</strong></td>
                             <td style="padding: 8px; border: 1px solid #ddd;">Pending</td>
                         </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Amount Paid:</strong></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">${}</td>
-                        </tr>
                     </table>
                     <p style="font-size: 14px; color: #666; margin-top: 20px;">
                         If you have any questions, feel free to contact us at <a href="mailto:info@megametalmachinery.com">info@megametalmachinery.com</a>.
@@ -221,27 +290,32 @@ def insert_courier(request):
                 </div>
                 """,
                 request.user.first_name,
-                formatted_delivery_price,
                 courier.tracking_number,
-                formatted_delivery_price
             )
 
-            # Send the email
-            send_mail(
+            email = EmailMessage(
                 subject,
-                "",  # Plain text version (optional)
+                html_message,
                 settings.EMAIL_HOST_USER,
-                [request.user.email],
-                fail_silently=False,
-                html_message=html_message
+                [request.user.email]
             )
+            email.content_subtype = "html"  # Specify HTML content
+            email.attach(f"Delivery_Receipt_{courier.tracking_number}.pdf", pdf_buffer.getvalue(), "application/pdf")
 
+            try:
+                email.send()
+            except Exception as e:
+                return JsonResponse({'error': f'Failed to send email: {str(e)}'}, status=500)
 
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'error': 'Invalid form data or missing delivery price'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
 
 
 def track_package(request):
