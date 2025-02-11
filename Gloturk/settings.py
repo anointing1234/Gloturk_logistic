@@ -30,11 +30,12 @@ SECRET_KEY = 'django-insecure-&cvwbhn6odhp6rg^%9m$wd9dgt6xhtulhqdq#y9h4fkliuzrnn
 # CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
 # ALLOWED_HOSTS = ["gloturklogistics.com"]
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
-# CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
-# ALLOWED_HOSTS = ["gloturklogistics.com"]
+# ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
+ALLOWED_HOSTS = ["gloturklogistics.com"]
+
 
 # # Application definition
 AUTH_USER_MODEL = 'accounts.Account'
@@ -151,12 +152,12 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 
-# if DEBUG:
-STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-# else:
-STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+if DEBUG:
+    STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 

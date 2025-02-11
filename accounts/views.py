@@ -99,8 +99,6 @@ def logout_view(request):
 
 
 
-
-
 def courier_form(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check for AJAX request
         form = CourierForm(request.POST)
@@ -108,7 +106,7 @@ def courier_form(request):
             # Calculate delivery price using weight and category from the form
             weight = form.cleaned_data['weight']
             category = form.cleaned_data['category']
-            delivery_price = 1000
+            delivery_price = calculate_fee(weight, category)
             delivery_price = delivery_price
             # Retrieve bank details
             bank_details = AdminBankDetails.objects.first()  # Example: Get the first entry in BankDetails table
