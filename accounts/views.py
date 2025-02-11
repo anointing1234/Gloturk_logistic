@@ -100,6 +100,7 @@ def logout_view(request):
 
 
 
+
 def courier_form(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Check for AJAX request
         form = CourierForm(request.POST)
@@ -107,8 +108,8 @@ def courier_form(request):
             # Calculate delivery price using weight and category from the form
             weight = form.cleaned_data['weight']
             category = form.cleaned_data['category']
-            delivery_price = calculate_delivery_price(weight, category)
-            delivery_price = float(delivery_price) 
+            delivery_price = 1000
+            delivery_price = delivery_price
             # Retrieve bank details
             bank_details = AdminBankDetails.objects.first()  # Example: Get the first entry in BankDetails table
             if bank_details:
@@ -122,6 +123,7 @@ def courier_form(request):
                         'branch_address': bank_details.branch_address,
                     }
                 }
+                print(bank_details.bank_name, bank_details.account_name, bank_details.account_number, bank_details.swift_code, bank_details.branch_address,delivery_price)
                 return JsonResponse(response_data)
             else:
                 return JsonResponse({'error': 'Bank details not found'}, status=500)
@@ -131,6 +133,7 @@ def courier_form(request):
     # For non-AJAX GET requests, render the template
     form = CourierForm()
     return render(request, 'parkage_delivery.html', {'form': form})
+
 
 
 
@@ -148,7 +151,7 @@ def calculate_delivery_price(weight, category):
         )
     except DeliveryFee.DoesNotExist:
         return 0.00  # Or set a default fee
-    return fee_rule.calculate_fee(weight)
+    return fee_rule.calculate_delivery_price(weight)
 
 
 def insert_courier(request):

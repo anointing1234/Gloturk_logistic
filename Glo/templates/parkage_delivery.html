@@ -115,8 +115,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 
-
-
 <script>
     $(document).ready(function() {
         $('#CourierForm').on('submit', function(e) {
@@ -137,6 +135,7 @@
                 type: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
+                    console.log(response);  // Log full response for debugging
                     Swal.close();  // Close the loading alert
 
                     if (response.delivery_price && response.bank_details) {
@@ -148,8 +147,10 @@
                                 <p><strong>Bank Name:</strong> ${response.bank_details.bank_name}</p>
                                 <p><strong>Account Name:</strong> ${response.bank_details.account_name}</p>
                                 <p><strong>Account Number:</strong> ${response.bank_details.account_number}</p>
-                                ${response.bank_details.swift_code ? `<p><strong>SWIFT Code:</strong> ${response.bank_details.swift_code}</p>` : ''}
-                                ${response.bank_details.branch_address ? `<p><strong>Branch Address:</strong> ${response.bank_details.branch_address}</p>` : ''}
+                                ${response.bank_details.swift_code !== undefined && response.bank_details.swift_code !== null ? 
+                                    `<p><strong>SWIFT Code:</strong> ${response.bank_details.swift_code}</p>` : ''}
+                                ${response.bank_details.branch_address !== undefined && response.bank_details.branch_address !== null ? 
+                                    `<p><strong>Branch Address:</strong> ${response.bank_details.branch_address}</p>` : ''}
                             `,
                             icon: 'info',
                             confirmButtonText: 'Proceed'
@@ -157,7 +158,8 @@
                             if (result.isConfirmed) {
                                 // Add delivery price to form data
                                 let formData = $('#CourierForm').serialize() + '&delivery_price=' + encodeURIComponent(response.delivery_price);
-                                // Show loading alert for the second AJAX request
+                                console.log('Form Data:', formData);  // Debugging: Log form data
+
                                 Swal.fire({
                                     title: 'Processing...',
                                     text: 'Please wait while we submit your request.',
@@ -166,7 +168,7 @@
                                         Swal.showLoading();  // Show loading animation
                                     }
                                 });
-                                
+
                                 // Second AJAX request to insert the courier with delivery price
                                 $.ajax({
                                     url: '{% url "insert_courier" %}',  // URL for inserting form data
@@ -179,9 +181,8 @@
                                             icon: 'success',
                                             confirmButtonText: 'OK'
                                         }).then(() => {
-                                            // Optional: Redirect or clear the form after submission
-                                            $('#CourierForm')[0].reset();
-                                            window.location.href = "{% url 'transactions' %}";
+                                            $('#CourierForm')[0].reset();  // Reset the form
+                                            window.location.href = "{% url 'transactions' %}";  // Redirect to transactions page
                                         });
                                     },
                                     error: function() {
@@ -206,6 +207,7 @@
                 },
                 error: function(xhr, status, error) {
                     Swal.close();  // Close the loading alert
+                    console.error('Error:', error);  // Log error for debugging
                     Swal.fire({
                         title: 'Error',
                         text: 'Something went wrong. Please check your internet connection or try again later.',
@@ -217,6 +219,7 @@
         });
     });
 </script>
+
 
 
 {% endblock %}
