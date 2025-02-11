@@ -129,69 +129,51 @@
                 }
             });
 
-            // First AJAX request to get delivery price and bank details
+            // First AJAX request to get delivery price
             $.ajax({
                 url: '{% url "courier_form" %}',  // URL for calculating delivery price
                 type: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    console.log(response);  // Log full response for debugging
+                    console.log(response);  // Debugging: Log full response
                     Swal.close();  // Close the loading alert
 
-                    if (response.delivery_price && response.bank_details) {
+                    if (response.delivery_price) {
+                        // Add delivery price to form data
+                        let formData = $('#CourierForm').serialize() + '&delivery_price=' + encodeURIComponent(response.delivery_price);
+                        console.log('Form Data:', formData);  // Debugging: Log form data
+
                         Swal.fire({
-                            title: 'Delivery Details',
-                            html: `
-                                <h5 class="mt-3">Bank Details for Payment</h5>
-                                <p><strong>Bank Name:</strong> ${response.bank_details.bank_name}</p>
-                                <p><strong>Account Name:</strong> ${response.bank_details.account_name}</p>
-                                <p><strong>Account Number:</strong> ${response.bank_details.account_number}</p>
-                                ${response.bank_details.swift_code !== undefined && response.bank_details.swift_code !== null ? 
-                                    `<p><strong>SWIFT Code:</strong> ${response.bank_details.swift_code}</p>` : ''}
-                                ${response.bank_details.branch_address !== undefined && response.bank_details.branch_address !== null ? 
-                                    `<p><strong>Branch Address:</strong> ${response.bank_details.branch_address}</p>` : ''}
-                            `,
-                            icon: 'info',
-                            confirmButtonText: 'Proceed'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Add delivery price to form data
-                                let formData = $('#CourierForm').serialize() + '&delivery_price=' + encodeURIComponent(response.delivery_price);
-                                console.log('Form Data:', formData);  // Debugging: Log form data
+                            title: 'Submitting...',
+                            text: 'Please wait while we submit your request.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();  // Show loading animation
+                            }
+                        });
 
+                        // Second AJAX request to insert the courier with delivery price
+                        $.ajax({
+                            url: '{% url "insert_courier" %}',  // URL for inserting form data
+                            type: 'POST',
+                            data: formData,
+                            success: function() {
                                 Swal.fire({
-                                    title: 'Processing...',
-                                    text: 'Please wait while we submit your request.',
-                                    allowOutsideClick: false,
-                                    didOpen: () => {
-                                        Swal.showLoading();  // Show loading animation
-                                    }
+                                    title: 'Success',
+                                    text: 'Your request has been received. Payment is under review. You will be notified once it is confirmed.',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    $('#CourierForm')[0].reset();  // Reset the form
+                                    window.location.href = "{% url 'transactions' %}";  // Redirect to transactions page
                                 });
-
-                                // Second AJAX request to insert the courier with delivery price
-                                $.ajax({
-                                    url: '{% url "insert_courier" %}',  // URL for inserting form data
-                                    type: 'POST',
-                                    data: formData,
-                                    success: function() {
-                                        Swal.fire({
-                                            title: 'Success',
-                                            text: 'Your request has been received. Payment is under review. You will be notified once it is confirmed.',
-                                            icon: 'success',
-                                            confirmButtonText: 'OK'
-                                        }).then(() => {
-                                            $('#CourierForm')[0].reset();  // Reset the form
-                                            window.location.href = "{% url 'transactions' %}";  // Redirect to transactions page
-                                        });
-                                    },
-                                    error: function() {
-                                        Swal.fire({
-                                            title: 'Error',
-                                            text: 'Failed to submit your request. Please try again.',
-                                            icon: 'error',
-                                            confirmButtonText: 'OK'
-                                        });
-                                    }
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Failed to submit your request. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
                                 });
                             }
                         });
@@ -218,7 +200,6 @@
         });
     });
 </script>
-
 
 
 {% endblock %}
