@@ -162,7 +162,7 @@ class CourierAdmin(admin.ModelAdmin):
                 <p style="font-size: 16px; color: #333;">
                     Your package with tracking number <strong>{}</strong> is currently  at <strong style="color: #007bff;">{}</strong>.
                 </p>
-                <p style="font-size: 14px; color: #666;">If you have any questions, feel free to contact us at <a href="mailto:gloturklogistics.com">gloturklogistics.com</a>.</p>
+                <p style="font-size: 14px; color: #666;">If you have any questions, feel free to contact us at <a href="mailto:https://gloturklogistics.com/">https://gloturklogistics.com/</a>.</p>
                 <p style="font-size: 14px; color: #666;">Best regards,<br>Glotürk Logistics Kargo Team</p>
             </div>
             """,
@@ -221,7 +221,7 @@ class CourierAdmin(admin.ModelAdmin):
                     </tr>
                 </table>
                 <p style="font-size: 14px; color: #666; margin-top: 20px;">
-                    If you have any questions, feel free to contact us at <a href="mailto:gloturklogistics.com">gloturklogistics.com</a>.
+                    If you have any questions, feel free to contact us at <a href="mailto:https://gloturklogistics.com/">https://gloturklogistics.com/</a>.
                 </p>
                 <p style="font-size: 14px; color: #666;">Best regards,<br>Glotürk Logistics Kargo Team</p>
             </div>

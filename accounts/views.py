@@ -308,7 +308,7 @@ def insert_courier(request):
                         </tr>
                     </table>
                     <p style="font-size: 14px; color: #666; margin-top: 20px;">
-                        If you have any questions, feel free to contact us at <a href="gloturklogistics.com">gloturklogistics.com</a>.
+                        If you have any questions, feel free to contact us at <a href="https://gloturklogistics.com/">https://gloturklogistics.com/</a>.
                     </p>
                     <p style="font-size: 14px; color: #666;">Best regards,<br>Glotürk Logistics Kargo Team</p>
                 </div>
