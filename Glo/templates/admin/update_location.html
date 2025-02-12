@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h1 class="mb-3">{{ title }}</h1>
+    <p class="text-muted">Update the current location for the selected couriers below:</p>
+
+    <form method="post" class="border p-4 bg-light rounded">
+      {% csrf_token %}
+      <div class="form-group mb-3">
+        <label for="id_current_location" class="form-label"><strong>Current Location</strong></label>
+        {{ form.current_location|add_class:"form-control" }}
+      </div>
+      <button type="submit" class="btn btn-primary">Update Location</button>
+    </form>
+
+    <h2 class="mt-5">Selected Couriers</h2>
+    <ul class="list-group mt-3">
+      {% for courier in couriers %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span><strong>{{ courier.tracking_number }}</strong> - {{ courier.receiver_name }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

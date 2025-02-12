@@ -17,6 +17,9 @@ from django.db.models import Count
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django import forms
+from django.urls import path
+from django.shortcuts import render, redirect
+
 
 
 
@@ -57,6 +60,9 @@ class AccountAdmin(admin.ModelAdmin):
     ordering = ('-date_joined',)
 
 
+class UpdateLocationForm(forms.Form):
+    current_location = forms.CharField(max_length=255, required=True, label="Current Location")
+
 
 class CourierAdmin(admin.ModelAdmin):
     list_display = (
@@ -92,7 +98,7 @@ class CourierAdmin(admin.ModelAdmin):
         }),
     )
 
-    actions = ['mark_as_in_transit', 'mark_as_delivered', 'mark_as_failed_delivery']
+    actions = ['mark_as_in_transit', 'mark_as_delivered', 'mark_as_failed_delivery','update_location_action']
 
     def save_model(self, request, obj, form, change):
         if change:  
@@ -107,15 +113,84 @@ class CourierAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('update-location/', self.admin_site.admin_view(self.update_location_view), name='update-location'),
+        ]
+        return custom_urls + urls
+
+    def update_location_action(self, request, queryset):
+        selected = ','.join(str(obj.pk) for obj in queryset)
+        return redirect(f"{request.path}update-location/?ids={selected}")
+
+    update_location_action.short_description = "Update Current Location and Notify User"
+
+    def update_location_view(self, request):
+        ids = request.GET.get('ids', '').split(',')
+        couriers = Courier.objects.filter(pk__in=ids)
+
+        if request.method == 'POST':
+            form = UpdateLocationForm(request.POST)
+            if form.is_valid():
+                current_location = form.cleaned_data['current_location']
+                for courier in couriers:
+                    # Update current location (add this to your model if needed)
+                    # courier.current_location = current_location
+                    courier.save()
+                    self.send_location_update_email(courier, current_location)
+                self.message_user(request, f"Location updated for {couriers.count()} courier(s) and notifications sent.")
+                return redirect('..')
+        else:
+            form = UpdateLocationForm()
+
+        context = {
+            'form': form,
+            'couriers': couriers,
+            'title': "Update Current Location",
+        }
+        return render(request, 'admin/update_location.html', context)
+
+    def send_location_update_email(self, courier, current_location):
+        """Sends an email to notify the user of the updated current location."""
+        email_subject = "Glotürk Logistics Kargo - Package Location Update"
+        html_message = format_html(
+            """
+            <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f9f9f9;">
+                <h1 style="color: #000;">Glotürk Logistics Kargo</h1>
+                <p style="font-size: 16px; color: #333;">Dear <strong>{}</strong>,</p>
+                <p style="font-size: 16px; color: #333;">
+                    Your package with tracking number <strong>{}</strong> is currently  at <strong style="color: #007bff;">{}</strong>.
+                </p>
+                <p style="font-size: 14px; color: #666;">If you have any questions, feel free to contact us at <a href="mailto:info@gloturklogistics.com">info@gloturklogistics.com</a>.</p>
+                <p style="font-size: 14px; color: #666;">Best regards,<br>Glotürk Logistics Kargo Team</p>
+            </div>
+            """,
+            courier.user.username,
+            courier.tracking_number,
+            current_location
+        )
+
+        send_mail(
+            email_subject,
+            "",
+            settings.EMAIL_HOST_USER,
+            [courier.user.email],
+            fail_silently=False,
+            html_message=html_message
+        )
+
     def send_status_update_email(self, courier):
         """Sends a status update email to the user when the courier status changes."""
         email_subject = "Glotürk Logistics Kargo - Package Status Update"
 
         if courier.status == "In Transit":
             status_message = """
-                We are pleased to inform you that the payment for your package has been confirmed. Your package is now scheduled for pickup, and our agents will contact you shortly via phone or email to coordinate the pickup process.
-                Thank you for choosing Glotürk Logistics. We are committed to providing you with reliable service.
-            """
+        We are pleased to inform you that your package is currently in transit. Our team is working diligently to ensure timely delivery.
+        You can track your package’s progress using your tracking number. Should you have any questions, feel free to reach out to our support team.
+        
+        Thank you for choosing Glotürk Logistics. We appreciate your trust in our services.
+    """
         elif courier.status == "Delivered":
             status_message = "Your package has been successfully delivered. Thank you for using Glotürk Logistics."
         elif courier.status == "Failed Delivery":
@@ -205,8 +280,6 @@ class AdminBankDetailsAdmin(admin.ModelAdmin):
     list_display = ('bank_name', 'account_name', 'account_number', 'swift_code', 'created_at')
     search_fields = ('bank_name', 'account_name', 'account_number')
     ordering = ['-created_at']
-
-
 
 
 

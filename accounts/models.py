@@ -83,9 +83,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
-
 class Courier(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='couriers',null=True,blank=True)  # User association
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='couriers', null=True, blank=True)  # User association
 
     # Receiver's Details
     receiver_name = models.CharField(max_length=255)
@@ -103,25 +102,8 @@ class Courier(models.Model):
     item_description = models.TextField()
     number_of_items = models.PositiveIntegerField(default=1)
     parcel_colour = models.CharField(max_length=50)
-
-    # New: Package Weight (in kilograms)
-    weight = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Enter the package weight in kilograms"
-    )
-     # New: Delivery Category
-    category = models.CharField(
-        max_length=50,
-        choices=[
-            ('Domestic', 'Domestic'),
-            ('International', 'International')
-        ],
-        default='Domestic',
-        help_text="Select the delivery category"
-    )
+    weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Enter the package weight in kilograms")
+    category = models.CharField(max_length=50, choices=[('Domestic', 'Domestic'), ('International', 'International')], default='Domestic', help_text="Select the delivery category")
 
     # Parcel & Consignment Transits
     destination = models.CharField(max_length=255)
@@ -140,6 +122,13 @@ class Courier(models.Model):
         ],
         default='Pending'
     )
+    current_location = models.CharField(
+        max_length=100,
+        default="Processing Center",  # Default location
+        null=True,
+        blank=True,
+        help_text="Enter the current country or city of the package"
+)
 
     tracking_number = models.CharField(max_length=100, unique=True)
 
