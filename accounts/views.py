@@ -341,19 +341,34 @@ def insert_courier(request):
 
 
 
+
 def track_package(request):
     tracking_status = None
     tracking_error = None
 
     if request.method == 'POST':
-        tracking_number = request.POST.get('tracking_number', '').strip()  # Remove whitespace
+        tracking_number = request.POST.get('tracking_number', '').strip()
         if tracking_number:
             try:
-                # Find the courier by tracking number without checking user
+                # Find the courier by tracking number
                 courier = Courier.objects.get(tracking_number=tracking_number)
                 
                 # Pass the courier object to the template
                 tracking_status = courier  
+
+                # Send email to the recipient
+                subject = f"Package Tracking Request for {tracking_number}"
+                message = (
+                    f"A user has tracked the package with tracking number: {tracking_number}.\n\n"
+                    f"Package Details:{courier.item_description}\n"
+                    f"Status: {courier.status}\n"
+                    f"Estimated Delivery: {courier.estimated_delivery_date}\n"
+                    f"Current Location: {courier.current_location}"
+                )
+                from_email = settings.DEFAULT_FROM_EMAIL  # Ensure this is configured in settings
+                recipient_list = ['info@gloturklogistics.com']
+                send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+                
             except Courier.DoesNotExist:
                 tracking_error = "No package found with the provided tracking number."
         else:
@@ -363,6 +378,7 @@ def track_package(request):
         'tracking_status': tracking_status,
         'tracking_error': tracking_error
     })
+
 
 
 
