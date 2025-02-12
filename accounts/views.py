@@ -179,7 +179,7 @@ def generate_receipt(courier, user):
 
     # Generate Barcode for Tracking Number
     barcode = code128.Code128(courier.tracking_number, barHeight=20, barWidth=0.8)
-    barcode.drawOn(p, 400, 740)  # Adjust the position of the barcode (x=400, y=740)
+    barcode.drawOn(p, 400, 740)
 
     # Table for Ship From and Ship To
     data = [
@@ -209,7 +209,7 @@ def generate_receipt(courier, user):
         ['Weight', f'{courier.weight} kg'],
         ['Category', courier.category],
         ['Delivery Status', courier.status],
-        ['Item discription',courier.item_description]
+        ['Item Description', courier.item_description]
     ]
 
     package_table = Table(package_data, colWidths=[150, 350])
@@ -224,16 +224,32 @@ def generate_receipt(courier, user):
     package_table.wrapOn(p, 50, 500)
     package_table.drawOn(p, 50, 550)
 
-    # Footer Section with Disclaimer and Signatures
+    # Footer Section with Disclaimer
     p.setFont("Helvetica-Oblique", 8)
     p.drawString(50, 100, "If you have any questions, contact us at info@gloturklogistics.com.")
     p.drawString(50, 85, "Note: This document serves as a receipt for your shipment.")
-    
+
+    # Add Auto-generated Signature
+    p.setFont("Helvetica", 12)
+    p.drawString(400, 150, "________________________")
+    p.setFont("Times-Italic", 14)  # Simulate a signature-like font  # Use a realistic cursive-like font for the signature
+    signature_text = generate_signature()
+    p.drawString(410, 155, signature_text)  # Position the signature above the line
+
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(440, 135, "Authorized Signature")
+
     p.showPage()
     p.save()
     buffer.seek(0)
     return buffer
 
+def generate_signature():
+    # Generate a pseudo-random signature-like text to make it look unique and hard to imitate
+    signatures = [
+        "John D. Smith", "A. Rodriguez", "Emily R. Clark", "Chris O'Neil", "M. Thompson"
+    ]
+    return random.choice(signatures)
 
 
 def insert_courier(request):
@@ -266,7 +282,7 @@ def insert_courier(request):
             pdf_buffer = generate_receipt(courier, request.user)
 
             # Prepare and send the email with the attached PDF
-            subject = "Payment Processing - Glotürk Logistics Kargo"
+            subject = "Package Processing - Glotürk Logistics Kargo"
             html_message = format_html(
                 """
                 <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
@@ -274,9 +290,9 @@ def insert_courier(request):
                     <p style="font-size: 16px; color: #333;">Dear <strong>{}</strong>,</p>
                     <p style="font-size: 16px; color: #333;">
                         Thank you for choosing Glotürk Logistics for your delivery service.<br>
-                        We have received your payment and your delivery details are being processed.
+                        Your package delivery information is being processed. You can find your parcel information below.
                     </p>
-                    <h2 style="color: #28a745;">Delivery Details</h2>
+                    <h2 style="color: #28a745;">Parcel Details</h2>
                     <table style="margin: 0 auto; border-collapse: collapse; font-size: 14px;">
                         <tr>
                             <td style="padding: 8px; border: 1px solid #ddd;"><strong>Tracking Number:</strong></td>
@@ -285,6 +301,10 @@ def insert_courier(request):
                         <tr>
                             <td style="padding: 8px; border: 1px solid #ddd;"><strong>Delivery Status:</strong></td>
                             <td style="padding: 8px; border: 1px solid #ddd;">Pending</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Item Description:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">{}</td>
                         </tr>
                     </table>
                     <p style="font-size: 14px; color: #666; margin-top: 20px;">
@@ -295,6 +315,7 @@ def insert_courier(request):
                 """,
                 request.user.first_name,
                 courier.tracking_number,
+                courier.item_description  # Add item description here
             )
 
             email = EmailMessage(
@@ -316,8 +337,6 @@ def insert_courier(request):
             return JsonResponse({'error': 'Invalid form data or missing delivery price'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
 
 
 
