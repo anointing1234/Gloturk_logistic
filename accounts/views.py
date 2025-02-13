@@ -46,7 +46,6 @@ from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
 
-
 logger = logging.getLogger(__name__)
 
 def register(request):
