@@ -27,14 +27,14 @@ environ.Env.read_env(os.path.join(BASE_DIR,'file.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-&cvwbhn6odhp6rg^%9m$wd9dgt6xhtulhqdq#y9h4fkliuzrnn'
-# CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
-# ALLOWED_HOSTS = ["gloturklogistics.com"]
+CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
+ALLOWED_HOSTS = ["gloturklogistics.com"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 # ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
-ALLOWED_HOSTS = ["gloturklogistics.com"]
+# CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
+# ALLOWED_HOSTS = ["gloturklogistics.com"]
 
 
 # # Application definition
