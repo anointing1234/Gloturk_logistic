@@ -76,7 +76,14 @@ class CourierAdmin(admin.ModelAdmin):
         'status'
     )
     list_filter = ('status', 'destination', 'date_sent', 'estimated_delivery_date')
-    search_fields = ('tracking_number', 'receiver_name', 'sender_name', 'receiver_contact_number', 'sender_contact_number', 'user__username')
+    search_fields = (
+        'tracking_number', 
+        'receiver_name', 
+        'sender_name', 
+        'receiver_contact_number', 
+        'sender_contact_number', 
+        'user__username'
+    )
     
     readonly_fields = ('tracking_number',)
 
@@ -84,21 +91,51 @@ class CourierAdmin(admin.ModelAdmin):
         ('User Information', {
             'fields': ('user',),
         }),
+        ('Shipping Document Details', {
+            'fields': ('trailer_number', 'seal_number', 'scac'),
+        }),
         ('Receiver Information', {
-            'fields': ('receiver_name', 'receiver_contact_number', 'receiver_email', 'receiver_address')
+            'fields': (
+                'receiver_name', 
+                'receiver_contact_number', 
+                'receiver_email', 
+                'receiver_address', 
+                'receiver_country', 
+                'receiver_street', 
+                'receiver_city', 
+                'receiver_state', 
+                'receiver_zip'
+            )
         }),
         ('Sender Information', {
-            'fields': ('sender_name', 'sender_contact_number', 'sender_email', 'sender_address')
+            'fields': (
+                'sender_name', 
+                'sender_contact_number', 
+                'sender_email', 
+                'sender_address', 
+                'sender_country', 
+                'sender_street', 
+                'sender_city', 
+                'sender_state', 
+                'sender_zip'
+            )
         }),
         ('Parcel Information', {
-            'fields': ('item_description', 'number_of_items', 'parcel_colour', 'destination')
+            'fields': ('item_description', 'number_of_items', 'parcel_colour', 'weight', 'rate', 'category')
         }),
         ('Consignment Details', {
-            'fields': ('date_sent', 'estimated_delivery_date', 'status', 'tracking_number')
+            'fields': (
+                'destination', 
+                'date_sent', 
+                'estimated_delivery_date', 
+                'current_location', 
+                'status', 
+                'tracking_number'
+            )
         }),
     )
 
-    actions = ['mark_as_in_transit', 'mark_as_delivered', 'mark_as_failed_delivery','update_location_action']
+    actions = ['mark_as_in_transit', 'mark_as_delivered', 'mark_as_failed_delivery', 'update_location_action']
 
     def save_model(self, request, obj, form, change):
         if change:  
@@ -108,7 +145,6 @@ class CourierAdmin(admin.ModelAdmin):
                 previous_status = None
 
             print(f"Previous Status: {previous_status}, Current Status: {obj.status}")
-
             self.send_status_update_email(obj)
 
         super().save_model(request, obj, form, change)
@@ -124,7 +160,7 @@ class CourierAdmin(admin.ModelAdmin):
         selected = ','.join(str(obj.pk) for obj in queryset)
         return redirect(f"{request.path}update-location/?ids={selected}")
 
-    update_location_action.short_description = "Update Current Location and Notify User"
+    update_location_action.short_description = "Update Current Location and time to  arrives"
 
     def update_location_view(self, request):
         ids = request.GET.get('ids', '').split(',')
@@ -135,8 +171,7 @@ class CourierAdmin(admin.ModelAdmin):
             if form.is_valid():
                 current_location = form.cleaned_data['current_location']
                 for courier in couriers:
-                    # Update current location (add this to your model if needed)
-                    # courier.current_location = current_location
+                    courier.current_location = current_location
                     courier.save()
                     self.send_location_update_email(courier, current_location)
                 self.message_user(request, f"Location updated for {couriers.count()} courier(s) and notifications sent.")
@@ -160,7 +195,7 @@ class CourierAdmin(admin.ModelAdmin):
                 <h1 style="color: #000;">Glotürk Logistics Kargo</h1>
                 <p style="font-size: 16px; color: #333;">Dear <strong>{}</strong>,</p>
                 <p style="font-size: 16px; color: #333;">
-                    Your package with tracking number <strong>{}</strong> is currently  at <strong style="color: #007bff;">{}</strong>.
+                    Your package with tracking number <strong>{}</strong> is currently at <strong style="color: #007bff;">{}</strong>.
                 </p>
                 <p style="font-size: 14px; color: #666;">If you have any questions, feel free to contact us at <a href="https://gloturklogistics.com/">https://gloturklogistics.com/</a>.</p>
                 <p style="font-size: 14px; color: #666;">Best regards,<br>Glotürk Logistics Kargo Team</p>
@@ -186,11 +221,10 @@ class CourierAdmin(admin.ModelAdmin):
 
         if courier.status == "In Transit":
             status_message = """
-        We are pleased to inform you that your package is currently in transit. Our team is working diligently to ensure timely delivery.
-        You can track your package’s progress using your tracking number. Should you have any questions, feel free to reach out to our support team.
-        
-        Thank you for choosing Glotürk Logistics. We appreciate your trust in our services.
-    """
+                We are pleased to inform you that your package is currently in transit. Our team is working diligently to ensure timely delivery.
+                You can track your package’s progress using your tracking number. Should you have any questions, feel free to reach out to our support team.
+                Thank you for choosing Glotürk Logistics.
+            """
         elif courier.status == "Delivered":
             status_message = "Your package has been successfully delivered. Thank you for using Glotürk Logistics."
         elif courier.status == "Failed Delivery":
@@ -254,7 +288,6 @@ class CourierAdmin(admin.ModelAdmin):
                 self.message_user(request, f"{updated_count} transaction(s) for {courier.tracking_number} marked as Completed.", level='info')
             else:
                 self.message_user(request, f"No pending transactions found for {courier.tracking_number}.", level='warning')
-
         self.message_user(request, "Selected couriers have been marked as 'In Transit'.")
     mark_as_in_transit.short_description = "Mark selected as In Transit"
 

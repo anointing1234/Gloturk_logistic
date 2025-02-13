@@ -4,12 +4,12 @@
 {% block content %}
   <div class="container mt-4">
     <h1 class="mb-3">{{ title }}</h1>
-    <p class="text-muted">Update the current location for the selected couriers below:</p>
+    <p class="text-muted">Update the current location,time to arrive,and country  for the selected couriers below:</p>
 
     <form method="post" class="border p-4 bg-light rounded">
       {% csrf_token %}
       <div class="form-group mb-3">
-        <label for="id_current_location" class="form-label"><strong>Current Location</strong></label>
+        <label for="id_current_location" class="form-label"><strong>input the details</strong></label>
         {{ form.current_location|add_class:"form-control" }}
       </div>
       <button type="submit" class="btn btn-primary">Update Location</button>

@@ -83,27 +83,137 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
-class Courier(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='couriers', null=True, blank=True)  # User association
 
-    # Receiver's Details
-    receiver_name = models.CharField(max_length=255)
+
+class Courier(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='couriers',
+        null=True,
+        blank=True
+    )  # User association
+
+    # Shipping Document Details
+    trailer_number = models.CharField(
+        max_length=50,
+        default='332764',
+        help_text="Trailer Number"
+    )
+    seal_number = models.CharField(
+        max_length=50,
+        default='9977',
+        help_text="Seal Number"
+    )
+    scac = models.CharField(
+        max_length=50,
+        default='N/A',
+        blank=True,
+        null=True,
+        help_text="Standard Carrier Alpha Code (SCAC)"
+    )
+
+    # Receiver's Details (SHIP TO)
+    receiver_name = models.CharField(max_length=255, default="SANA CISERLE")
     receiver_contact_number = models.CharField(max_length=15)
     receiver_email = models.EmailField()
-    receiver_address = models.TextField()
+    receiver_address = models.TextField(help_text="Full address line", default="VIA 36 ASILLE ITAY")
+    receiver_country = models.CharField(max_length=100, default="Italy")
+    # Extra receiver address details
+    receiver_street = models.CharField(
+        max_length=255,
+        default="ABO. NAG, 23",
+        blank=True,
+        null=True,
+        help_text="Street"
+    )
+    receiver_city = models.CharField(
+        max_length=100,
+        default="GAMB. 21",
+        blank=True,
+        null=True,
+        help_text="City"
+    )
+    receiver_state = models.CharField(
+        max_length=100,
+        default="GAMB. 34",
+        blank=True,
+        null=True,
+        help_text="State"
+    )
+    receiver_zip = models.CharField(
+        max_length=20,
+        default="90030",
+        blank=True,
+        null=True,
+        help_text="Zip Code"
+    )
 
-    # Sender's Details
-    sender_name = models.CharField(max_length=255)
-    sender_contact_number = models.CharField(max_length=15)
+    # Sender's Details (SHIP FROM)
+    sender_name = models.CharField(max_length=255, default="Horacio Roscinto")
+    sender_contact_number = models.CharField(max_length=15, default="N/A")
     sender_email = models.EmailField()
-    sender_address = models.TextField()
+    sender_address = models.TextField(help_text="Full address line", default="No Return Address")
+    sender_country = models.CharField(max_length=100, default="Australia")
+    # Extra sender address details
+  
+    sender_street = models.CharField(
+        max_length=255,
+        default="N/A",
+        blank=True,
+        null=True,
+        help_text="Street"
+    )
+    sender_city = models.CharField(
+        max_length=100,
+        default="N/A",
+        blank=True,
+        null=True,
+        help_text="City"
+    )
+    sender_state = models.CharField(
+        max_length=100,
+        default="N/A",
+        blank=True,
+        null=True,
+        help_text="State"
+    )
+    sender_zip = models.CharField(
+        max_length=20,
+        default="N/A",
+        blank=True,
+        null=True,
+        help_text="Zip Code"
+    )
 
     # Item(s) Description
     item_description = models.TextField()
     number_of_items = models.PositiveIntegerField(default=1)
     parcel_colour = models.CharField(max_length=50)
-    weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Enter the package weight in kilograms")
-    category = models.CharField(max_length=50, choices=[('Domestic', 'Domestic'), ('International', 'International')], default='Domestic', help_text="Select the delivery category")
+    weight = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Enter the package weight in kilograms"
+    )
+    rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        null=True,
+        blank=True,
+        help_text="Rate for the shipment"
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=[
+            ('Domestic', 'Domestic'),
+            ('International', 'International')
+        ],
+        default='Domestic',
+        help_text="Select the delivery category"
+    )
 
     # Parcel & Consignment Transits
     destination = models.CharField(max_length=255)
@@ -124,16 +234,17 @@ class Courier(models.Model):
     )
     current_location = models.CharField(
         max_length=100,
-        default="Processing Center",  # Default location
+        default="Processing Center",
         null=True,
         blank=True,
         help_text="Enter the current country or city of the package"
-)
+    )
 
     tracking_number = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return f"Tracking No: {self.tracking_number} - Status: {self.status}"
+
 
 
 class Transaction(models.Model):

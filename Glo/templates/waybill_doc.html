@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Air Waybill</title>
+  <style>
+    /* Basic Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      background-color: #fff;
+      padding: 5px;  /* reduced padding */
+    }
+    /* Page Container */
+    .page {
+      width: 800px;
+      margin: 0 auto;
+      padding: 10px; /* reduced padding */
+      border: 1px solid #000;
+      background-color: #fff;
+      position: relative;
+      margin-top: 20px;  /* reduced margin-top */
+    }
+    /* Page margins for PDF */
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+    /* Text Watermark Style */
+    .page::before {
+        content: "GLOTÜRK LOGISTIC KARGO SERVICE"; /* Watermark text */
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 30px;         /* Adjust size as needed */
+        color: rgba(0, 0, 0, 0.10); /* Transparent black */
+        z-index: 0;
+        pointer-events: none;
+        white-space: nowrap;     /* Prevents text from wrapping */
+      }
+      
+    /* Common Table Styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 5px; /* reduced margin */
+    }
+    th, td {
+      font-size: 12px; /* slightly smaller font */
+      vertical-align: top;
+      padding: 3px;
+      border: 1px solid #ccc;
+    }
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+      text-align: left;
+    }
+    .header-title {
+      font-size: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .top-info td {
+      padding: 4px 8px;
+    }
+    .top-info td strong {
+      display: inline-block;
+      width: 100px;
+    }
+    .section-heading {
+      text-align: center;
+      background-color: black;
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 4px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+    .outer-border {
+      border: 1px solid #000 !important;
+    }
+    .outer-border td, .outer-border th {
+      border: 1px solid #000 !important;
+    }
+    .footer-note {
+      font-size: 10px;
+      margin-top: 5px;
+      color: #333;
+      border-top: 1px solid #ccc;
+      padding-top: 5px;
+      text-align: center;
+    }
+    /* Address table for better alignment */
+    .address-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .address-table td {
+      padding: 2px 4px;
+      vertical-align: top;
+      border: none;
+    }
+    .address-table td.label {
+      font-weight: bold;
+      width: 30%;
+    }
+    .address-table td.value {
+      width: 70%;
+    }
+    /* Prevent page break in the signature section */
+    .no-break {
+      page-break-inside: avoid;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <!-- Header -->
+  <div style="text-align:right; font-weight:bold; text-transform:uppercase;">
+    <h3>Glotürk Logistic Kargo Service<br>COURIER COMPANY</h3>
+  </div>
+  <div class="header-title">AIR WAYBILL</div>
+  <!-- Top Info -->
+  <table class="top-info">
+    <tr>
+      <td><strong>Tracking #:</strong> {{ courier.tracking_number }}</td>
+      <td><strong>Bill Date:</strong> {{ courier.date_sent|date:"d-M-Y" }}</td>
+      <td><strong>From:</strong> {{ courier.sender_country }}</td>
+      <td><strong>To:</strong> {{ courier.receiver_country }}</td>
+    </tr>
+  </table>
+  <!-- Carrier & Freight Terms -->
+  <table class="outer-border">
+    <tr>
+      <td style="width:50%;">
+        <strong>Carrier:</strong> TRILLEREXPRESS COURIER COMPANY<br>
+        <strong>Trailer Number:</strong> {{ courier.trailer_number }}<br>
+        <strong>Seal Number:</strong> {{ courier.seal_number }}<br>
+        <strong>SCAC:</strong> {{ courier.scac }}<br>
+        <strong>Shipped on Board, Date:</strong> {{ courier.date_sent|date:"d-M-Y" }}
+      </td>
+      <td style="width:50%;">
+        <strong>Freight Charge Terms</strong> (where appropriate are prepaid):<br>
+        &nbsp;&nbsp;X Prepaid<br>
+        &nbsp;&nbsp;Collect<br>
+        &nbsp;&nbsp;3rd Party<br><br>
+        <strong>Special Instructions:</strong>
+      </td>
+    </tr>
+  </table>
+  <!-- Ship From -->
+  <div class="section-heading">SHIP FROM</div>
+  <table class="outer-border address-table">
+    <tr>
+      <td class="label"><strong>Name:</strong></td>
+      <td class="value">{{ courier.sender_name }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Address:</strong></td>
+      <td class="value">{{ courier.sender_address }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Phone:</strong></td>
+      <td class="value">{{ courier.sender_contact_number }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Street:</strong></td>
+      <td class="value">{{ courier.sender_street }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>City:</strong></td>
+      <td class="value">{{ courier.sender_city }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>State:</strong></td>
+      <td class="value">{{ courier.sender_state }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Zip:</strong></td>
+      <td class="value">{{ courier.sender_zip }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Country:</strong></td>
+      <td class="value">{{ courier.sender_country }}</td>
+    </tr>
+  </table>
+  <!-- Ship To -->
+  <div class="section-heading">SHIP TO</div>
+  <table class="outer-border address-table">
+    <tr>
+      <td class="label"><strong>Name:</strong></td>
+      <td class="value">{{ courier.receiver_name }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Address:</strong></td>
+      <td class="value">{{ courier.receiver_address }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Street:</strong></td>
+      <td class="value">{{ courier.receiver_street }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>City:</strong></td>
+      <td class="value">{{ courier.receiver_city }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>State:</strong></td>
+      <td class="value">{{ courier.receiver_state }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Zip:</strong></td>
+      <td class="value">{{ courier.receiver_zip }}</td>
+    </tr>
+    <tr>
+      <td class="label"><strong>Country:</strong></td>
+      <td class="value">{{ courier.receiver_country }}</td>
+    </tr>
+  </table>
+  <!-- Items Table -->
+  <table class="outer-border">
+    <thead>
+      <tr>
+        <th style="width: 8%;">PKG</th>
+        <th style="width: 8%;">QTY</th>
+        <th style="width: 40%;">COMMODITY DESCRIPTION</th>
+        <th style="width: 10%;">WEIGHT</th>
+        <th style="width: 8%;">CLASS</th>
+        <th style="width: 13%;">RATE</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>1</td>
+        <td>{{ courier.item_description }}</td>
+        <td>{{ courier.weight }} KGS</td>
+        <td>{{ class_value }}</td>
+        <td>AUD {{ courier.rate }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- Signature Section (avoid page break) -->
+  <div class="no-break">
+    <table class="outer-border" style="margin-bottom: 0;">
+      <tr>
+        <td style="width: 50%; border-right:1px solid #000; padding:10px;">
+          <strong>Shipper's Signature</strong>
+          <div style="margin-top: 5px; font-size: 10px;">
+            This is to certify that the above materials are properly classified, packaged, marked and labeled for transportation.
+          </div>
+        </td>
+        <td style="width: 50%; padding:10px;">
+          <strong>Carrier Signature</strong>
+          <div style="margin-top: 5px;">
+            <img src="{% static 'img/signature.png' %}" alt="Signature" style="max-height:40px; width:auto;">
+            <br><span style="font-size:10px;">Triller Express</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <!-- Footer Note -->
+  <div class="footer-note">
+    <strong>Note:</strong> Freight charges are prepaid unless marked otherwise.
+  </div>
+</div>
+</body>
+</html>

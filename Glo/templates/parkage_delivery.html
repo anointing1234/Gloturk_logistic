@@ -10,105 +10,168 @@
         font-size: 14px;
     }
 </style>
+
+
+
 <section class="h-100 d-flex justify-content-center align-items-center">
     <div class="container py-5">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-md-10 col-lg-8">
-                <div class="card bg-transparent border-0 card-registration my-4">
-                    <div class="card-body border-0 bg-transparent p-md-5 text-black">
-                        <h4 class="mb-5 text-uppercase text-center">Fill Form for Delivery</h4>
-                        <form id="CourierForm" method="POST">
-                            {% csrf_token %}
-                            <div class="row">
-                                <!-- Receiver's Details -->
-                                <h5 class="mb-3">Receiver's Details</h5>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.receiver_name.label_tag }}
-                                    {{ form.receiver_name }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.receiver_contact_number.label_tag }}
-                                    {{ form.receiver_contact_number }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.receiver_email.label_tag }}
-                                    {{ form.receiver_email }}
-                                </div>
-                                <div class="col-md-12 form-outline">
-                                    {{ form.receiver_address.label_tag }}
-                                    {{ form.receiver_address }}
-                                </div>
-                                
-                                <!-- Sender's Details -->
-                                <h5 class="mt-4 mb-3">Sender's Details</h5>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.sender_name.label_tag }}
-                                    {{ form.sender_name }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.sender_contact_number.label_tag }}
-                                    {{ form.sender_contact_number }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.sender_email.label_tag }}
-                                    {{ form.sender_email }}
-                                </div>
-                                <div class="col-md-12 form-outline">
-                                    {{ form.sender_address.label_tag }}
-                                    {{ form.sender_address }}
-                                </div>
-                                
-                                <!-- Item Description -->
-                                <h5 class="mt-4 mb-3">Item Description</h5>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.item_description.label_tag }}
-                                    {{ form.item_description }}
-                                </div>
-                                <div class="col-md-3 form-outline">
-                                    {{ form.number_of_items.label_tag }}
-                                    {{ form.number_of_items }}
-                                </div>
-                                <div class="col-md-3 form-outline">
-                                    {{ form.parcel_colour.label_tag }}
-                                    {{ form.parcel_colour }}
-                                </div>
-                                
-                                <!-- Package Details: Weight and Category -->
-                                <h5 class="mt-4 mb-3">Package Details</h5>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.weight.label_tag }}
-                                    {{ form.weight }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.category.label_tag }}
-                                    {{ form.category }}
-                                </div>
-                                
-                                <!-- Delivery Details -->
-                                <h5 class="mt-4 mb-3">Delivery Details</h5>
-                                <div class="col-md-12 form-outline">
-                                    {{ form.destination.label_tag }}
-                                    {{ form.destination }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.date_sent.label_tag }}
-                                    {{ form.date_sent }}
-                                </div>
-                                <div class="col-md-6 form-outline">
-                                    {{ form.estimated_delivery_date.label_tag }}
-                                    {{ form.estimated_delivery_date }}
-                                </div>
-                            </div>
-                            <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-dark btn-lg w-100">Submit</button>
-                            </div>
-                        </form>
-                    </div><!-- End card-body -->
-                </div><!-- End card -->
-            </div><!-- End col -->
-        </div><!-- End row -->
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-md-10 col-lg-8">
+          <div class="card bg-transparent border-0 card-registration my-4">
+            <div class="card-body border-0 bg-transparent p-md-5 text-black">
+              <h4 class="mb-5 text-uppercase text-center">Fill Form for Delivery</h4>
+              <form id="CourierForm" method="POST">
+                {% csrf_token %}
+                <div class="row">
+                  <!-- Shipping Document Details -->
+                  <h5 class="mb-3">Shipping Document Details</h5>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.trailer_number.label_tag }}
+                    {{ form.trailer_number }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.seal_number.label_tag }}
+                    {{ form.seal_number }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.scac.label_tag }}
+                    {{ form.scac }}
+                  </div>
+  
+                  <!-- Receiver's Details -->
+                  <h5 class="mt-4 mb-3">Receiver's Details</h5>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.receiver_name.label_tag }}
+                    {{ form.receiver_name }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.receiver_contact_number.label_tag }}
+                    {{ form.receiver_contact_number }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.receiver_email.label_tag }}
+                    {{ form.receiver_email }}
+                  </div>
+                  <div class="col-md-12 form-outline mb-3">
+                    {{ form.receiver_address.label_tag }}
+                    {{ form.receiver_address }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.receiver_country.label_tag }}
+                    {{ form.receiver_country }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.receiver_street.label_tag }}
+                    {{ form.receiver_street }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.receiver_city.label_tag }}
+                    {{ form.receiver_city }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.receiver_state.label_tag }}
+                    {{ form.receiver_state }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.receiver_zip.label_tag }}
+                    {{ form.receiver_zip }}
+                  </div>
+  
+                  <!-- Sender's Details -->
+                  <h5 class="mt-4 mb-3">Sender's Details</h5>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.sender_name.label_tag }}
+                    {{ form.sender_name }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.sender_contact_number.label_tag }}
+                    {{ form.sender_contact_number }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.sender_email.label_tag }}
+                    {{ form.sender_email }}
+                  </div>
+                  <div class="col-md-12 form-outline mb-3">
+                    {{ form.sender_address.label_tag }}
+                    {{ form.sender_address }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.sender_country.label_tag }}
+                    {{ form.sender_country }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.sender_street.label_tag }}
+                    {{ form.sender_street }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.sender_city.label_tag }}
+                    {{ form.sender_city }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.sender_state.label_tag }}
+                    {{ form.sender_state }}
+                  </div>
+                  <div class="col-md-4 form-outline mb-3">
+                    {{ form.sender_zip.label_tag }}
+                    {{ form.sender_zip }}
+                  </div>
+  
+                  <!-- Item Description & Rate -->
+                  <h5 class="mt-4 mb-3">Item Description</h5>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.item_description.label_tag }}
+                    {{ form.item_description }}
+                  </div>
+                  <div class="col-md-3 form-outline mb-3">
+                    {{ form.number_of_items.label_tag }}
+                    {{ form.number_of_items }}
+                  </div>
+                  <div class="col-md-3 form-outline mb-3">
+                    {{ form.parcel_colour.label_tag }}
+                    {{ form.parcel_colour }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.rate.label_tag }}
+                    {{ form.rate }}
+                  </div>
+  
+                  <!-- Package Details -->
+                  <h5 class="mt-4 mb-3">Package Details</h5>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.weight.label_tag }}
+                    {{ form.weight }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.category.label_tag }}
+                    {{ form.category }}
+                  </div>
+  
+                  <!-- Delivery Details -->
+                  <h5 class="mt-4 mb-3">Delivery Details</h5>
+                  <div class="col-md-12 form-outline mb-3">
+                    {{ form.destination.label_tag }}
+                    {{ form.destination }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.date_sent.label_tag }}
+                    {{ form.date_sent }}
+                  </div>
+                  <div class="col-md-6 form-outline mb-3">
+                    {{ form.estimated_delivery_date.label_tag }}
+                    {{ form.estimated_delivery_date }}
+                  </div>
+                </div>
+                <div class="text-center mt-4">
+                  <button type="submit" class="btn btn-dark btn-lg w-100">Submit</button>
+                </div>
+              </form>
+            </div><!-- End card-body -->
+          </div><!-- End card -->
+        </div><!-- End col -->
+      </div><!-- End row -->
     </div><!-- End container -->
-</section>
+  </section>
+  
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

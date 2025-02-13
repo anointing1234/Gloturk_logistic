@@ -42,9 +42,12 @@ from reportlab.lib.styles import getSampleStyleSheet
 from django.http import FileResponse
 import io
 from reportlab.graphics.barcode import code128 
+from xhtml2pdf import pisa
+from django.template.loader import render_to_string
+from django.contrib.staticfiles import finders
+
 
 logger = logging.getLogger(__name__)
-
 
 def register(request):
     if request.method == 'POST':
@@ -162,113 +165,88 @@ def calculate_delivery_price(weight, category):
     return fee_rule.calculate_fee(weight)
 
 
-def generate_receipt(courier, user):
-    buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
-    p.setTitle("Air Waybill Receipt")
+def link_callback(uri, rel):
+    """
+    Convert HTML URIs to absolute system paths so that xhtml2pdf can access those resources.
+    This version first checks STATICFILES_DIRS (for development) then falls back to STATIC_ROOT.
+    """
+    # If the URI starts with STATIC_URL, remove that portion.
+    sUrl = settings.STATIC_URL  # e.g., "/static/"
+    if uri.startswith(sUrl):
+        # Remove the STATIC_URL prefix to get the relative path.
+        relative_path = uri[len(sUrl):]
+        
+        # Check each directory in STATICFILES_DIRS (useful in development).
+        if hasattr(settings, 'STATICFILES_DIRS'):
+            for static_dir in settings.STATICFILES_DIRS:
+                abs_path = os.path.join(static_dir, relative_path)
+                if os.path.exists(abs_path):
+                    return abs_path
+        
+        # Otherwise, fall back to STATIC_ROOT (useful after collectstatic in production).
+        abs_path = os.path.join(settings.STATIC_ROOT, relative_path)
+        if os.path.exists(abs_path):
+            return abs_path
 
-    # Header
-    p.setFont("Helvetica-Bold", 16)
-    p.drawCentredString(300, 800, "AIR WAYBILL RECEIPT")
+    # Fallback: try using Django's staticfiles finders.
+    result = finders.find(uri)
+    if result:
+        if not isinstance(result, (list, tuple)):
+            result = [result]
+        # Return the first absolute path found.
+        result = [os.path.realpath(path) for path in result]
+        return result[0]
+    
+    # If nothing is found, return the URI as is.
+    return uri
 
-    p.setFont("Helvetica", 10)
-    p.drawString(50, 780, "Glotürk Logistics Kargo")
-    p.drawString(50, 765, "Website: www.gloturklogistics.com")
-    p.drawString(400, 780, f"Tracking #: {courier.tracking_number}")
-    p.drawString(400, 765, f"Bill Date: {courier.date_sent.strftime('%d-%b-%Y')}")
 
-    # Generate Barcode for Tracking Number
-    barcode = code128.Code128(courier.tracking_number, barHeight=20, barWidth=0.8)
-    barcode.drawOn(p, 400, 740)
 
-    # Table for Ship From and Ship To
-    data = [
-        ['SHIP FROM', 'SHIP TO'],
-        [
-            f'Consignor: {courier.sender_name}\nAddress: {courier.sender_address}\nEmail: {courier.sender_email}', 
-            f'Consignee: {courier.receiver_name}\nAddress: {courier.receiver_address}\nEmail: {courier.receiver_email}\nPhone: {courier.receiver_contact_number}'
-        ]
-    ]
+def generate_receipt_pdf(courier, request):
+    # Generate a random value for the CLASS column each time
+    class_value = random.randint(1, 100)  # Adjust the range as needed
 
-    table = Table(data, colWidths=[250, 250])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    table.wrapOn(p, 50, 620)
-    table.drawOn(p, 50, 670)
-
-    # Package and Delivery Details
-    package_data = [
-        ['PACKAGE DETAILS', ''],
-        ['Weight', f'{courier.weight} kg'],
-        ['Category', courier.category],
-        ['Delivery Status', courier.status],
-        ['Item Description', courier.item_description]
-    ]
-
-    package_table = Table(package_data, colWidths=[150, 350])
-    package_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-    ]))
-    package_table.wrapOn(p, 50, 500)
-    package_table.drawOn(p, 50, 550)
-
-    # Footer Section with Disclaimer
-    p.setFont("Helvetica-Oblique", 8)
-    p.drawString(50, 100, "If you have any questions, contact us at info@gloturklogistics.com.")
-    p.drawString(50, 85, "Note: This document serves as a receipt for your shipment.")
-
-    # Add Auto-generated Signature
-    p.setFont("Helvetica", 12)
-    p.drawString(400, 150, "________________________")
-    p.setFont("Times-Italic", 14)  # Simulate a signature-like font  # Use a realistic cursive-like font for the signature
-    signature_text = generate_signature()
-    p.drawString(410, 155, signature_text)  # Position the signature above the line
-
-    p.setFont("Helvetica-Bold", 10)
-    p.drawString(440, 135, "Authorized Signature")
-
-    p.showPage()
-    p.save()
-    buffer.seek(0)
-    return buffer
-
-def generate_signature():
-    # Generate a pseudo-random signature-like text to make it look unique and hard to imitate
-    signatures = [
-        "John D. Smith", "A. Rodriguez", "Emily R. Clark", "Chris O'Neil", "M. Thompson"
-    ]
-    return random.choice(signatures)
+    # Render the HTML template with both the courier and class_value in the context
+    html_string = render_to_string('waybill_doc.html', {
+        'courier': courier,
+        'class_value': class_value
+    })
+    
+    # Create a byte stream buffer.
+    result = io.BytesIO()
+    
+    # Convert HTML to PDF, passing in the link_callback so static images are resolved
+    pisa_status = pisa.CreatePDF(
+        html_string,
+        dest=result,
+        link_callback=link_callback  # Make sure your link_callback is defined
+    )
+    if pisa_status.err:
+        return None  # or handle error as needed
+    
+    result.seek(0)
+    return result.read()  # Return PDF bytes
 
 
 def insert_courier(request):
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         form = CourierForm(request.POST)
         delivery_price = request.POST.get('delivery_price')
-
+        
         if form.is_valid() and delivery_price:
             try:
                 delivery_price = float(delivery_price)
             except ValueError:
                 return JsonResponse({'error': 'Invalid delivery price'}, status=400)
-
+            
+            # Create the courier instance (without committing yet)
             courier = form.save(commit=False)
             courier.user = request.user
             courier.tracking_number = str(uuid.uuid4()).replace('-', '').upper()[:10]
             courier.status = 'Pending'
             courier.save()
-
+            
+            # Create the related Transaction record
             Transaction.objects.create(
                 user=request.user,
                 courier=courier,
@@ -277,11 +255,13 @@ def insert_courier(request):
                 status='Pending',
                 date=now()
             )
-
-            # Generate the PDF receipt
-            pdf_buffer = generate_receipt(courier, request.user)
-
-            # Prepare and send the email with the attached PDF
+            
+            # Generate the PDF receipt (as bytes) using the HTML template method.
+            pdf_file = generate_receipt_pdf(courier, request)
+            if pdf_file is None:
+                return JsonResponse({'error': 'Error generating PDF'}, status=500)
+            
+            # Prepare and send the email
             subject = "Package Processing - Glotürk Logistics Kargo"
             html_message = format_html(
                 """
@@ -289,8 +269,8 @@ def insert_courier(request):
                     <h1 style="color: #000000;">Glotürk Logistics Kargo</h1>
                     <p style="font-size: 16px; color: #333;">Dear <strong>{}</strong>,</p>
                     <p style="font-size: 16px; color: #333;">
-                        Thank you for choosing Glotürk Logistics for your delivery service.<br>
-                        Your package delivery information is being processed. You can find your parcel information below.
+                        Thank you for choosing Glotürk Logistics for your delivery service.
+                        Your package delivery information is being processed.
                     </p>
                     <h2 style="color: #28a745;">Parcel Details</h2>
                     <table style="margin: 0 auto; border-collapse: collapse; font-size: 14px;">
@@ -299,25 +279,20 @@ def insert_courier(request):
                             <td style="padding: 8px; border: 1px solid #ddd;">{}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Delivery Status:</strong></td>
+                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Status:</strong></td>
                             <td style="padding: 8px; border: 1px solid #ddd;">Pending</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Item Description:</strong></td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">{}</td>
                         </tr>
                     </table>
                     <p style="font-size: 14px; color: #666; margin-top: 20px;">
-                        If you have any questions, feel free to contact us at <a href="https://gloturklogistics.com/">https://gloturklogistics.com/</a>.
+                        For further assistance, please contact us at <a href="https://gloturklogistics.com/">https://gloturklogistics.com/</a>.
                     </p>
                     <p style="font-size: 14px; color: #666;">Best regards,<br>Glotürk Logistics Kargo Team</p>
                 </div>
                 """,
                 request.user.first_name,
-                courier.tracking_number,
-                courier.item_description  # Add item description here
+                courier.tracking_number
             )
-
+            
             email = EmailMessage(
                 subject,
                 html_message,
@@ -325,17 +300,21 @@ def insert_courier(request):
                 [request.user.email]
             )
             email.content_subtype = "html"  # Specify HTML content
-            email.attach(f"Delivery_Receipt_{courier.tracking_number}.pdf", pdf_buffer.getvalue(), "application/pdf")
-
+            email.attach(
+                f"Delivery_Receipt_{courier.tracking_number}.pdf",
+                pdf_file,
+                "application/pdf"
+            )
+            
             try:
                 email.send()
             except Exception as e:
                 return JsonResponse({'error': f'Failed to send email: {str(e)}'}, status=500)
-
+            
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'error': 'Invalid form data or missing delivery price'}, status=400)
-
+    
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
@@ -606,3 +585,8 @@ def contact_us_send(request):
     # Return error response for invalid request method
     logger.error("Invalid request method.")
     return JsonResponse({'success': False, 'message': 'Invalid request method. Please use POST.'})
+
+
+
+def waybill(request):
+    return render(request,'waybill_doc.html')

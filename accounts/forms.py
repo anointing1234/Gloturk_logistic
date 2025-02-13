@@ -108,32 +108,68 @@ class LoginForm(forms.Form):
         return self.user_cache
 
 
+
 class CourierForm(forms.ModelForm):
     class Meta:
         model = Courier
         fields = [
+            # Shipping Document Details
+            'trailer_number', 'seal_number', 'scac',
+
+            # Receiver's Details (SHIP TO)
             'receiver_name', 'receiver_contact_number', 'receiver_email', 'receiver_address',
+            'receiver_country', 'receiver_street', 'receiver_city', 'receiver_state', 'receiver_zip',
+
+            # Sender's Details (SHIP FROM)
             'sender_name', 'sender_contact_number', 'sender_email', 'sender_address',
-            'item_description', 'number_of_items', 'parcel_colour',
-            'destination', 'date_sent', 'estimated_delivery_date', 'weight', 'category'
+            'sender_country','sender_street', 'sender_city', 'sender_state', 'sender_zip',
+
+            # Item(s) Description and Rate
+            'item_description', 'number_of_items', 'parcel_colour', 'rate', 'weight', 'category',
+
+            # Transit Details
+            'destination', 'date_sent', 'estimated_delivery_date',
         ]
         widgets = {
+            # Shipping Document Details
+            'trailer_number': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'seal_number': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'scac': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+
+            # Receiver's Details
             'receiver_name': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
-            'receiver_contact_number': forms.TextInput(attrs={'class': 'form-control','type': 'number', 'style': 'border: 1px solid black;'}),
+            'receiver_contact_number': forms.TextInput(attrs={'class': 'form-control', 'type': 'number', 'style': 'border: 1px solid black;'}),
             'receiver_email': forms.EmailInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
             'receiver_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'style': 'border: 1px solid black;'}),
+            'receiver_country': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'receiver_street': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'receiver_city': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'receiver_state': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'receiver_zip': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+
+            # Sender's Details
             'sender_name': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
-            'sender_contact_number': forms.TextInput(attrs={'class': 'form-control','type': 'number', 'style': 'border: 1px solid black;'}),
+            'sender_contact_number': forms.TextInput(attrs={'class': 'form-control', 'type': 'number', 'style': 'border: 1px solid black;'}),
             'sender_email': forms.EmailInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
             'sender_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'style': 'border: 1px solid black;'}),
+            'sender_country': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'sender_street': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'sender_city': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'sender_state': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'sender_zip': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+
+            # Item(s) Description and Rate
             'item_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'style': 'border: 1px solid black;'}),
             'number_of_items': forms.NumberInput(attrs={'class': 'form-control', 'type': 'number', 'style': 'border: 1px solid black;'}),
             'parcel_colour': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+            'rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'style': 'border: 1px solid black;'}),
+            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'style': 'border: 1px solid black;'}),
+            'category': forms.Select(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
+
+            # Transit Details
             'destination': forms.TextInput(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
             'date_sent': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'style': 'border: 1px solid black;'}),
             'estimated_delivery_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'style': 'border: 1px solid black;'}),
-            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'style': 'border: 1px solid black;'}),
-            'category': forms.Select(attrs={'class': 'form-control', 'style': 'border: 1px solid black;'}),
         }
 
     def clean_estimated_delivery_date(self):
@@ -143,6 +179,7 @@ class CourierForm(forms.ModelForm):
         if estimated_delivery_date and date_sent and estimated_delivery_date < date_sent:
             raise ValidationError("Estimated delivery date cannot be before the date sent.")
         return estimated_delivery_date
+
 
 
 class SendresetcodeForm(forms.Form):

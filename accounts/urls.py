@@ -12,6 +12,7 @@ urlpatterns = [
     path('courier_form/',views.courier_form,name='courier_form'), 
     path('insert-courier/', views.insert_courier, name='insert_courier'),   
     path('track/',views.track_package, name='track_package'), 
+    path('waybill/',views.waybill,name='waybill'),
     path('contact_us_send/',views.contact_us_send,name='contact_us_send'),  
     path('transactions/', views.transaction_history, name='transactions'),   
     path('sendmail_view/',views.send_reset_code_view,name='sendmail_view'),
