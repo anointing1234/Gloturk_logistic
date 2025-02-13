@@ -160,7 +160,7 @@ class CourierAdmin(admin.ModelAdmin):
         selected = ','.join(str(obj.pk) for obj in queryset)
         return redirect(f"{request.path}update-location/?ids={selected}")
 
-    update_location_action.short_description = "Update Current Location and time to  arrives"
+    update_location_action.short_description = "Update Current Location and time it arrives"
 
     def update_location_view(self, request):
         ids = request.GET.get('ids', '').split(',')
