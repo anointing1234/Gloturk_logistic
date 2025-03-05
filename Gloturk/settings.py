@@ -33,8 +33,8 @@ SECRET_KEY = 'django-insecure-&cvwbhn6odhp6rg^%9m$wd9dgt6xhtulhqdq#y9h4fkliuzrnn
 DEBUG = False
 
 # ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://gloturklogistics.com"]
-ALLOWED_HOSTS = ["gloturklogistics.com"]
+CSRF_TRUSTED_ORIGINS = ["https://gloturkslogistic.com"]
+ALLOWED_HOSTS = ["gloturkslogistic.com"]
 
 
 # # Application definition
